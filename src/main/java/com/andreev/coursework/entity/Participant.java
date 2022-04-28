@@ -1,10 +1,10 @@
 package com.andreev.coursework.entity;
 
-import com.andreev.coursework.entity.security.Role;
-
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "user")
@@ -26,119 +26,55 @@ public class Participant {
     @Column(name = "mail")
     private String mail;
 
-    @Column(name = "hash_password")
-    private String hashPassword;
-
-    @Column(name = "enabled")
-    private byte enabled;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "role_id")
-    private Role role;
-
-    @ManyToMany(cascade = CascadeType.ALL,
-        fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "student_task"
-        , joinColumns = @JoinColumn(name = "student_id")
-        , inverseJoinColumns = @JoinColumn(name = "task_id")
-    )
-    private List<Task> taskList;
+    @Column(name = "isTeacher")
+    private boolean isTeacher;
 
     @OneToMany(cascade = CascadeType.ALL
         , mappedBy = "creator"
         , fetch = FetchType.LAZY)
-    private List<Task> createdTasks;
+    private List<Chat> createdChatList;
+
+    @ManyToMany(cascade = CascadeType.ALL,
+        fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_chat"
+        , joinColumns = @JoinColumn(name = "user_id")
+        , inverseJoinColumns = @JoinColumn(name = "chat_id")
+    )
+    private List<Chat> chatList;
+
+    @OneToMany(mappedBy = "participant")
+    private Set<UserCourseAgent> userCourseSet;
+
+    @OneToMany(mappedBy = "student")
+    private Set<UserTaskAgent> taskList = new HashSet<>();
+
+    private String code;
 
     public Participant() {
     }
 
     public Participant(String firstName, String secondName, String patronymic,
-        String mail, String hashPassword, byte enabled) {
+        String mail, boolean isTeacher) {
         this.firstName = firstName;
         this.secondName = secondName;
         this.patronymic = patronymic;
         this.mail = mail;
-        this.hashPassword = hashPassword;
-        this.enabled = enabled;
+        this.isTeacher = isTeacher;
     }
 
-    public void addTaskToList(Task task) {
-        if (taskList == null) {
-            taskList = new ArrayList<>();
+    public void addChatToParticipant(Chat chat) {
+        if (chatList == null) {
+            chatList = new ArrayList<>();
         }
-        taskList.add(task);
+        chatList.add(chat);
     }
 
-    public int getId() {
-        return id;
+    public String getCode() {
+        return code;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getSecondName() {
-        return secondName;
-    }
-
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
-    }
-
-    public String getPatronymic() {
-        return patronymic;
-    }
-
-    public void setPatronymic(String patronymic) {
-        this.patronymic = patronymic;
-    }
-
-    public String getMail() {
-        return mail;
-    }
-
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
-
-    public String getHashPassword() {
-        return hashPassword;
-    }
-
-    public void setHashPassword(String hashPassword) {
-        this.hashPassword = hashPassword;
-    }
-
-    public byte getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(byte enabled) {
-        this.enabled = enabled;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public List<Task> getTaskList() {
-        return taskList;
-    }
-
-    public void setTaskList(List<Task> taskList) {
-        this.taskList = taskList;
+    public void setCode(String code) {
+        this.code = code;
     }
 }

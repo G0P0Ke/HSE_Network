@@ -1,14 +1,12 @@
 package com.andreev.coursework.entity;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "task")
 public class Task {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -27,14 +25,17 @@ public class Task {
     @JoinColumn(name = "creator_id")
     private Participant creator;
 
-    @ManyToMany(cascade = CascadeType.ALL,
-        fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "student_task"
-        , joinColumns = @JoinColumn(name = "task_id")
-        , inverseJoinColumns = @JoinColumn(name = "student_id")
-    )
-    private Set<Participant> executors;
+    @ManyToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @OneToMany(mappedBy = "task")
+    private Set<UserTaskAgent> userList;
+
+    @OneToMany(cascade = CascadeType.ALL
+        , mappedBy = "task"
+        , fetch = FetchType.LAZY)
+    private List<Answer> answerList;
 
     public Task() {
     }
@@ -44,21 +45,6 @@ public class Task {
         this.dateFinish = dateFinish;
         this.pdf = pdf;
         this.creator = creator;
-    }
-
-    public void addExecutorToList(Participant participant) {
-        if (executors == null) {
-            executors = new HashSet<>();
-        }
-        executors.add(participant);
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getDescription() {
@@ -93,11 +79,33 @@ public class Task {
         this.creator = creator;
     }
 
-    public Set<Participant> getExecutors() {
-        return executors;
+    public Course getCourse() {
+        return course;
     }
 
-    public void setExecutors(Set<Participant> executors) {
-        this.executors = executors;
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    public Set<UserTaskAgent> getUserList() {
+        if (userList == null) {
+            userList = new HashSet<>();
+        }
+        return userList;
+    }
+
+    public void setUserList(Set<UserTaskAgent> userList) {
+        this.userList = userList;
+    }
+
+    public List<Answer> getAnswerList() {
+        if (answerList == null) {
+            answerList = new ArrayList<>();
+        }
+        return answerList;
+    }
+
+    public void setAnswerList(List<Answer> answerList) {
+        this.answerList = answerList;
     }
 }

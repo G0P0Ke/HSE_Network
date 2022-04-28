@@ -17,11 +17,11 @@ public class Answer {
     @Column(name = "date_send")
     private Date dateSend;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "task_id")
     private Task task;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "student_id")
     private Participant user;
 

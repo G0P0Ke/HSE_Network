@@ -5,9 +5,7 @@ public class SignUpFormDto {
     private String secondName;
     private String patronymic;
     private String mail;
-    private String hashPassword;
-    private byte enabled;
-    private String role;
+    private boolean isTeacher;
 
     public String getFirstName() {
         return firstName;
@@ -41,27 +39,7 @@ public class SignUpFormDto {
         this.mail = mail;
     }
 
-    public String getHashPassword() {
-        return hashPassword;
-    }
-
-    public void setHashPassword(String hashPassword) {
-        this.hashPassword = hashPassword;
-    }
-
-    public byte getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(byte enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
+    public boolean isTeacher() {
+        return isTeacher;
     }
 }

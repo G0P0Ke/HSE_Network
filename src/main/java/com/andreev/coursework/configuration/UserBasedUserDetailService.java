@@ -2,6 +2,7 @@ package com.andreev.coursework.configuration;
 
 import com.andreev.coursework.entity.Participant;
 import com.andreev.coursework.service.participant.ParticipantService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,21 +19,24 @@ import java.util.stream.Stream;
 @Service
 public class UserBasedUserDetailService implements UserDetailsService {
 
-    @Autowired
-    private ParticipantService participantService;
+    private final ParticipantService participantService;
+
+    public UserBasedUserDetailService(ParticipantService participantService) {
+        this.participantService = participantService;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String firstName) throws UsernameNotFoundException {
         Participant user = participantService.findByFirstName(firstName);
 
-        if(user == null) {
+        if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
 
-        List<GrantedAuthority> authorities = Stream.of(user.getRole()).map(role ->
-            new SimpleGrantedAuthority(role.getName().name())
-        ).collect(Collectors.toList());
-
-        return new User(user.getFirstName(), user.getHashPassword(), authorities);
+//        List<GrantedAuthority> authorities = Stream.of(user.getRole()).map(role ->
+//            new SimpleGrantedAuthority(role.getName().name())
+//        ).collect(Collectors.toList());
+//
+        return new User("user.getFirstName()", null, null);
     }
 }

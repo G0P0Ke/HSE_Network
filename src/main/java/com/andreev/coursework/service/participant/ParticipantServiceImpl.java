@@ -7,12 +7,11 @@ import com.andreev.coursework.entity.security.Role;
 import com.andreev.coursework.entity.security.RoleName;
 import com.andreev.coursework.exception.paricipant.ParticipantRegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ParticipantServiceImpl implements ParticipantService {
@@ -20,7 +19,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     private ParticipantRepository participantRepository;
     @Autowired
     private RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public Participant findByFirstName(String firstName) {
@@ -48,22 +46,28 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    public void deleteUser(int id) {
-        participantRepository.deleteById(id);
+    public void loginUser(String email) {
+        Participant user = participantRepository.findParticipantByMail(email);
+        if (user == null) {
+            user = new Participant("", "", "", email, false);
+            participantRepository.save(user);
+        }
+        user.setCode(generateCode());
+    }
+
+    private String generateCode() {
+        return UUID.randomUUID().toString();
     }
 
     @Override
-    public void createEmployee(String firstName, String secondName, String patronymic, String mail, String hashPassword, byte enabled, String roleString) {
-        Participant user = new Participant(firstName, patronymic, secondName, mail, passwordEncoder.encode(hashPassword), enabled);
-        user.setRole(validateAndGetRegisteredRoles(roleString));
-        participantRepository.save(user);
+    public void deleteUser(int id) {
+        participantRepository.deleteById(id);
     }
 
     private Role validateAndGetRegisteredRoles(String roleString) {
 
         RoleName registeredRoleName = extractRoleNameFromRoleString(roleString);
         Role registeredRole = roleRepository.findByName(registeredRoleName);
-
         return registeredRole;
     }
 

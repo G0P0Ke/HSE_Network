@@ -6,7 +6,6 @@ import com.andreev.coursework.entity.Task;
 import com.andreev.coursework.exception.paricipant.ParticipantRegistrationException;
 import com.andreev.coursework.exception.paricipant.NoSuchParticipantException;
 import com.andreev.coursework.service.participant.ParticipantService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,15 +13,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 public class ParticipantController {
-    @Autowired
-    private ParticipantService participantService;
+
+    private final ParticipantService participantService;
+
+    public ParticipantController(ParticipantService participantService) {
+        this.participantService = participantService;
+    }
 
     @GetMapping()
     public List<Participant> showAllUsers() {
-        List<Participant> allUsers = participantService.getAllUsers();
-        return allUsers;
+        return participantService.getAllUsers();
     }
 
     @GetMapping("/{id}")
@@ -30,24 +32,29 @@ public class ParticipantController {
         return participantService.getUser(id);
     }
 
-    @PostMapping("")
-    @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<String> createNewUser(@RequestBody SignUpFormDto signUpRequest) {
-        try {
-            participantService.createEmployee(
-                signUpRequest.getFirstName(),
-                signUpRequest.getSecondName(),
-                signUpRequest.getPatronymic(),
-                signUpRequest.getMail(),
-                signUpRequest.getHashPassword(),
-                signUpRequest.getEnabled(),
-                signUpRequest.getRole());
-        } catch (ParticipantRegistrationException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
-
-        return ResponseEntity.ok("Participant registered successfully!");
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody String email) {
+        this.participantService.loginUser(email);
+        return ResponseEntity.ok("Code send successfully!");
     }
+
+
+//    @PostMapping("")
+//    @PreAuthorize("hasRole('TEACHER')")
+//    public ResponseEntity<String> createNewUser(@RequestBody SignUpFormDto signUpRequest) {
+//        try {
+//            participantService.createEmployee(
+//                signUpRequest.getFirstName(),
+//                signUpRequest.getSecondName(),
+//                signUpRequest.getPatronymic(),
+//                signUpRequest.getMail(),
+//                signUpRequest.isTeacher());
+//        } catch (ParticipantRegistrationException ex) {
+//            return ResponseEntity.badRequest().body(ex.getMessage());
+//        }
+//
+//        return ResponseEntity.ok("Participant registered successfully!");
+//    }
 
     @GetMapping("/{id}/tasks")
     public List<Task> getAllTasksByParticipantId(@PathVariable int id) {
@@ -56,7 +63,7 @@ public class ParticipantController {
             throw new NoSuchParticipantException("There is no participant with ID = " + id
                 + " in Database");
         }
-        List<Task> tasks = participant.getTaskList();
-        return tasks;
+//        return participant.getTaskList();
+        return null;
     }
 }

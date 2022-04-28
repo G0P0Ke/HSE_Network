@@ -6,6 +6,7 @@ import java.util.Date;
 @Entity
 @Table(name = "message")
 public class Message {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -17,74 +18,14 @@ public class Message {
     @Column(name = "date_send")
     private Date dateSend;
 
-    @OneToOne
-    @JoinColumn(name = "from_id")
-    private Participant userFromId;
+    @ManyToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "chat_id")
+    private Chat chat;
 
-    @OneToOne
-    @JoinColumn(name = "to_id")
-    private Participant userToId;
-
-    @OneToOne
-    @JoinColumn(name = "channel_id")
-    private Channel channel;
+    @ManyToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "user_id")
+    private Participant sender;
 
     public Message() {
-    }
-
-    public Message(String content, Date dateSend, Participant userFromId, Participant userToId, Channel channel) {
-        this.content = content;
-        this.dateSend = dateSend;
-        this.userFromId = userFromId;
-        this.userToId = userToId;
-        this.channel = channel;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Date getDateSend() {
-        return dateSend;
-    }
-
-    public void setDateSend(Date dateSend) {
-        this.dateSend = dateSend;
-    }
-
-    public Participant getUserFromId() {
-        return userFromId;
-    }
-
-    public void setUserFromId(Participant userFromId) {
-        this.userFromId = userFromId;
-    }
-
-    public Participant getUserToId() {
-        return userToId;
-    }
-
-    public void setUserToId(Participant userToId) {
-        this.userToId = userToId;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public void setChannel(Channel channel) {
-        this.channel = channel;
     }
 }

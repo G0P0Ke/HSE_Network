@@ -6,16 +6,15 @@ import java.util.List;
 
 public interface ParticipantService {
 
-    public Participant findByFirstName(String FirstName);
+    Participant findByFirstName(String firstName);
 
-    public List<Participant> getAllUsers();
+    void loginUser(String email);
 
-    public void saveUser(Participant user);
+    List<Participant> getAllUsers();
 
-    public Participant getUser(int id);
+    void saveUser(Participant user);
 
-    public void deleteUser(int id);
+    Participant getUser(int id);
 
-    public void createEmployee(String firstName, String secondName, String patronymic,
-        String mail, String hashPassword, byte enabled, String roleString);
+    void deleteUser(int id);
 }
