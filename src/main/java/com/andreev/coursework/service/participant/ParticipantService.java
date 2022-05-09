@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ParticipantService {
 
-    Participant findByFirstName(String firstName);
+    Participant findByMail(String email);
 
     void loginUser(String email);
 
@@ -17,4 +17,6 @@ public interface ParticipantService {
     Participant getUser(int id);
 
     void deleteUser(int id);
+
+    boolean isActive(String email, String code);
 }

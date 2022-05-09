@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ParticipantRepository extends JpaRepository<Participant, Integer> {
     Participant findByFirstName(String login);
 
-    Participant findParticipantByMail(String email);
+    Participant findParticipantByMail(String mail);
 }

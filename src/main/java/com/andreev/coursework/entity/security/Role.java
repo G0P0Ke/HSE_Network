@@ -1,6 +1,5 @@
 package com.andreev.coursework.entity.security;
 
-import com.andreev.coursework.entity.Participant;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
@@ -16,10 +15,6 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @NaturalId
     private RoleName name;
-
-    @OneToOne(mappedBy = "role",
-        cascade = CascadeType.ALL)
-    private Participant participant;
 
     public Role() {
     }

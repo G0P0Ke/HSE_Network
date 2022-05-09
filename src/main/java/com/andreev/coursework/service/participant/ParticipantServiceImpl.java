@@ -6,10 +6,14 @@ import com.andreev.coursework.entity.Participant;
 import com.andreev.coursework.entity.security.Role;
 import com.andreev.coursework.entity.security.RoleName;
 import com.andreev.coursework.exception.paricipant.ParticipantRegistrationException;
+import com.andreev.coursework.service.MailSender;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,13 +21,13 @@ import java.util.UUID;
 public class ParticipantServiceImpl implements ParticipantService {
     @Autowired
     private ParticipantRepository participantRepository;
+
     @Autowired
     private RoleRepository roleRepository;
 
-    @Override
-    public Participant findByFirstName(String firstName) {
-        return participantRepository.findByFirstName(firstName);
-    }
+    @Autowired
+    private MailSender mailSender;
+    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public List<Participant> getAllUsers() {
@@ -46,13 +50,28 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    public void loginUser(String email) {
-        Participant user = participantRepository.findParticipantByMail(email);
+    public Participant findByMail(String email) {
+        return participantRepository.findParticipantByMail(email);
+    }
+
+    @Override
+    public void loginUser(String mail) {
+        Participant user = participantRepository.findParticipantByMail(mail);
         if (user == null) {
-            user = new Participant("", "", "", email, false);
-            participantRepository.save(user);
+            user = new Participant("", "", "", mail,
+                false, passwordEncoder.encode(mail));
         }
         user.setCode(generateCode());
+        participantRepository.save(user);
+
+        String message = String.format(
+            "Hello, %s! \n" +
+                "Your activation code: %s",
+            user.getMail(),
+            user.getCode()
+        );
+
+        mailSender.send(user.getMail(), "Activation code", message);
     }
 
     private String generateCode() {
@@ -62,6 +81,20 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public void deleteUser(int id) {
         participantRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean isActive(String email, String code) {
+        Participant user = participantRepository.findParticipantByMail(email);
+        if (user == null) {
+            return false;
+        }
+        if (Objects.equals(code, user.getCode())) {
+            user.setActive(true);
+            participantRepository.save(user);
+            return true;
+        }
+        return false;
     }
 
     private Role validateAndGetRegisteredRoles(String roleString) {
