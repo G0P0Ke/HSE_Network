@@ -20,6 +20,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserBasedUserDetailService userDetailsService;
     public final PasswordEncoder passwordEncoder;
     private final JwtAuthEntryPoint unauthorizedHandler;
+    private static final String[] AUTH_WHITELIST = {
+        // -- Login
+        "/security/*",
+        "/actuator/*",
+        // -- Swagger UI v2
+        "/v2/api-docs",
+        "/swagger-resources",
+        "/swagger-resources/**",
+        "/configuration/ui",
+        "/configuration/security",
+        "/swagger-ui.html",
+        "/webjars/**",
+        // -- Swagger UI v3 (OpenAPI)
+        "/v3/api-docs/**",
+        "/swagger-ui/**"
+    };
 
     public SecurityConfig(UserBasedUserDetailService userDetailsService, JwtAuthEntryPoint unauthorizedHandler,
         PasswordEncoder passwordEncoder) {
@@ -51,10 +67,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/security/*", "/actuator/*").permitAll()
+            .antMatchers(AUTH_WHITELIST).permitAll()
             .anyRequest().authenticated()
             .and().httpBasic()
             .and().sessionManagement().disable()
             .exceptionHandling().authenticationEntryPoint(unauthorizedHandler);
     }
+
 }
