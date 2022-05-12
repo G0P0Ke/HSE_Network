@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserBasedUserDetailService userDetailsService;
-    public final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final JwtAuthEntryPoint unauthorizedHandler;
     private static final String[] AUTH_WHITELIST = {
         // -- Login

@@ -1,5 +1,6 @@
 package com.andreev.coursework.service.participant;
 
+import com.andreev.coursework.dto.ProfileDto;
 import com.andreev.coursework.entity.Participant;
 
 import java.util.List;
@@ -13,6 +14,8 @@ public interface ParticipantService {
     List<Participant> getAllUsers();
 
     void saveUser(Participant user);
+
+    void updateProfileUser(Participant participant, ProfileDto profileDto);
 
     Participant getUser(int id);
 

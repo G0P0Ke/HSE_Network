@@ -2,6 +2,7 @@ package com.andreev.coursework.service.participant;
 
 import com.andreev.coursework.dao.ParticipantRepository;
 import com.andreev.coursework.dao.RoleRepository;
+import com.andreev.coursework.dto.ProfileDto;
 import com.andreev.coursework.entity.Participant;
 import com.andreev.coursework.entity.security.Role;
 import com.andreev.coursework.entity.security.RoleName;
@@ -37,6 +38,23 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public void saveUser(Participant user) {
         participantRepository.save(user);
+    }
+
+    @Override
+    public void updateProfileUser(Participant participant, ProfileDto profileDto) {
+        if (!profileDto.getFirstName().isEmpty())  {
+            participant.setFirstName(profileDto.getFirstName());
+        }
+        if (!profileDto.getSurname().isEmpty()) {
+            participant.setSecondName(profileDto.getSurname());
+        }
+        if (!profileDto.getPatronymic().isEmpty()) {
+            participant.setPatronymic(profileDto.getPatronymic());
+        }
+        if (!profileDto.getMail().isEmpty()) {
+            participant.setMail(profileDto.getMail());
+        }
+        participantRepository.save(participant);
     }
 
     @Override
