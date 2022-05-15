@@ -1,5 +1,9 @@
 package com.andreev.coursework.entity;
 
+import com.andreev.coursework.entity.security.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,6 +13,7 @@ import java.util.Set;
 @Entity
 @Table(name = "course")
 public class Course {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -20,20 +25,47 @@ public class Course {
     @Column(name = "description")
     private String description;
 
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL
         , mappedBy = "course"
         , fetch = FetchType.LAZY)
     private List<Chat> chatList;
 
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL
         , mappedBy = "course"
         , fetch = FetchType.LAZY)
     private List<Task> taskList;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "course")
     private Set<UserCourseAgent> participants;
 
     public Course() {
+    }
+
+    public Course(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public UserCourseAgent addParticipant(Participant participant, Role role) {
+        UserCourseAgent userCourseAgent = new UserCourseAgent();
+        userCourseAgent.setCourse(this);
+        userCourseAgent.setParticipant(participant);
+        userCourseAgent.setRole(role);
+
+        UserCourseAgentPK userCourseAgentPK = new UserCourseAgentPK();
+        userCourseAgentPK.setCourse_id(this.getId());
+        userCourseAgentPK.setUser_id(participant.getId());
+        userCourseAgentPK.setRole_id(role.getId());
+
+        userCourseAgent.setId(userCourseAgentPK);
+
+        this.getParticipants().add(userCourseAgent);
+        participant.getUserCourseSet().add(userCourseAgent);
+
+        return userCourseAgent;
     }
 
     public String getName() {
@@ -65,6 +97,17 @@ public class Course {
         return participants;
     }
 
+    public Set<Participant> getCourseParticipants() {
+        if (participants == null) {
+            participants = new HashSet<>();
+        }
+        Set<Participant> courseParticipant = new HashSet<>();
+        for (var el: participants) {
+            courseParticipant.add(el.getParticipant());
+        }
+        return courseParticipant;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -72,4 +115,17 @@ public class Course {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void addToTaskList(Task task) {
+        if (taskList == null) {
+            taskList = new ArrayList<>();
+        }
+        taskList.add(task);
+        task.setCourse(this);
+    }
+
 }

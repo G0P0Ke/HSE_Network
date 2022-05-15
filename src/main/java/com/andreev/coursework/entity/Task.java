@@ -1,5 +1,8 @@
 package com.andreev.coursework.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.util.*;
 
@@ -19,6 +22,7 @@ public class Task {
     private Date dateFinish;
 
     @Column(name = "data")
+    @Type(type="org.hibernate.type.MaterializedBlobType")
     private byte[] pdf;
 
     @ManyToOne(cascade = {CascadeType.ALL})
@@ -29,9 +33,11 @@ public class Task {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "task")
     private Set<UserTaskAgent> userList;
 
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL
         , mappedBy = "task"
         , fetch = FetchType.LAZY)

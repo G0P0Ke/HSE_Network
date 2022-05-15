@@ -1,10 +1,9 @@
-package com.andreev.coursework.exception.paricipant;
+package com.andreev.coursework.exception.course;
 
-public class ParticipantIncorrectData {
-
+public class CourseIncorrectData {
     private String info;
 
-    public ParticipantIncorrectData() {
+    public CourseIncorrectData() {
     }
 
     public String getInfo() {

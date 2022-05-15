@@ -25,4 +25,14 @@ public class ParticipantGlobalExceptionHandler {
 
         return new ResponseEntity<>(data, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler
+    public ResponseEntity<ParticipantIncorrectData> handleException(
+        NoParticipantRightsException exception
+    ) {
+        ParticipantIncorrectData data = new ParticipantIncorrectData();
+        data.setInfo(exception.getMessage());
+
+        return new ResponseEntity<>(data, HttpStatus.FORBIDDEN);
+    }
 }

@@ -29,4 +29,28 @@ public class UserCourseAgent {
     public Role getRole() {
         return role;
     }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public Participant getParticipant() {
+        return participant;
+    }
+
+    public void setParticipant(Participant participant) {
+        this.participant = participant;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setId(UserCourseAgentPK id) {
+        this.id = id;
+    }
 }

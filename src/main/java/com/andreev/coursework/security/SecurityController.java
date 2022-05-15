@@ -4,6 +4,7 @@ import com.andreev.coursework.dto.EntryDto;
 import com.andreev.coursework.security.jwt.JwtProvider;
 import com.andreev.coursework.security.jwt.JwtResponse;
 import com.andreev.coursework.service.participant.ParticipantService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -33,6 +33,7 @@ public class SecurityController {
         consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     )
+    @Operation(summary = "Получение кода для активации пользователя")
     public ResponseEntity<String> login(@RequestBody EntryDto entryDto) {
         this.participantService.loginUser(entryDto.getEmail());
         return ResponseEntity.ok("Code send successfully!");
@@ -42,6 +43,7 @@ public class SecurityController {
         value = "/entry",
         consumes = "application/json"
     )
+    @Operation(summary = "Аутентификация пользователя")
     public ResponseEntity<JwtResponse> authenticateEmployee(@RequestBody EntryDto entryDto) {
         boolean entryFlag = participantService.isActive(entryDto.getEmail(), entryDto.getCode());
         if (entryFlag) {

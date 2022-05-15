@@ -47,7 +47,7 @@ create table task
     id          integer not null auto_increment,
     date_ending datetime(6),
     description varchar(255),
-    data        tinyblob,
+    data        longblob,
     course_id   integer,
     creator_id  integer,
     primary key (id)

@@ -1,5 +1,7 @@
 package com.andreev.coursework.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,20 +28,25 @@ public class Participant {
     @Column(name = "mail")
     private String mail;
 
+    @JsonIgnore
     @Column(name = "is_teacher")
     private boolean isTeacher;
 
+    @JsonIgnore
     @Column(name = "is_active")
     private boolean isActive;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL
         , mappedBy = "creator"
         , fetch = FetchType.LAZY)
     private List<Chat> createdChatList;
 
+    @JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL,
         fetch = FetchType.LAZY)
     @JoinTable(
@@ -49,12 +56,15 @@ public class Participant {
     )
     private List<Chat> chatList;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "participant")
     private Set<UserCourseAgent> userCourseSet;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "student")
     private Set<UserTaskAgent> taskList = new HashSet<>();
 
+    @JsonIgnore
     @Column(name = "code")
     private String code;
 
@@ -146,5 +156,15 @@ public class Participant {
         return password;
     }
 
+    public Set<UserTaskAgent> getTaskList() {
+        return taskList;
+    }
 
+    public List<Chat> getChatList() {
+        return chatList;
+    }
+
+    public Set<UserCourseAgent> getUserCourseSet() {
+        return userCourseSet;
+    }
 }

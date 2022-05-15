@@ -1,12 +1,15 @@
 package com.andreev.coursework.service.participant;
 
+import com.andreev.coursework.dao.CourseRepository;
 import com.andreev.coursework.dao.ParticipantRepository;
 import com.andreev.coursework.dao.RoleRepository;
+import com.andreev.coursework.dao.UserCourseAgentRepository;
+import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
+import com.andreev.coursework.entity.Course;
 import com.andreev.coursework.entity.Participant;
-import com.andreev.coursework.entity.security.Role;
+import com.andreev.coursework.entity.UserCourseAgent;
 import com.andreev.coursework.entity.security.RoleName;
-import com.andreev.coursework.exception.paricipant.ParticipantRegistrationException;
 import com.andreev.coursework.service.MailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +23,12 @@ import java.util.UUID;
 
 @Service
 public class ParticipantServiceImpl implements ParticipantService {
+    @Autowired
+    private UserCourseAgentRepository userCourseAgentRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
+
     @Autowired
     private ParticipantRepository participantRepository;
 
@@ -55,6 +64,14 @@ public class ParticipantServiceImpl implements ParticipantService {
             participant.setMail(profileDto.getMail());
         }
         participantRepository.save(participant);
+    }
+
+    @Override
+    public void addCourse(Participant participant, CourseDto courseDto) {
+        Course course = new Course(courseDto.getName(), courseDto.getDescription());
+        courseRepository.save(course);
+        UserCourseAgent userCourseAgent = course.addParticipant(participant, roleRepository.findByName(RoleName.ROLE_TEACHER));
+        userCourseAgentRepository.save(userCourseAgent);
     }
 
     @Override
@@ -113,25 +130,5 @@ public class ParticipantServiceImpl implements ParticipantService {
             return true;
         }
         return false;
-    }
-
-    private Role validateAndGetRegisteredRoles(String roleString) {
-
-        RoleName registeredRoleName = extractRoleNameFromRoleString(roleString);
-        Role registeredRole = roleRepository.findByName(registeredRoleName);
-        return registeredRole;
-    }
-
-    private RoleName extractRoleNameFromRoleString(String roleString) {
-        switch (roleString.trim().toLowerCase()) {
-            case "student":
-                return RoleName.ROLE_STUDENT;
-            case "teacher":
-                return RoleName.ROLE_TEACHER;
-            case "assistant":
-                return RoleName.ROLE_ASSISTANT;
-            default:
-                throw new ParticipantRegistrationException("Invalid role was given for registration");
-        }
     }
 }

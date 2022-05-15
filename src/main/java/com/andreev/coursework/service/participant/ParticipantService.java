@@ -1,5 +1,6 @@
 package com.andreev.coursework.service.participant;
 
+import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
 import com.andreev.coursework.entity.Participant;
 
@@ -16,6 +17,8 @@ public interface ParticipantService {
     void saveUser(Participant user);
 
     void updateProfileUser(Participant participant, ProfileDto profileDto);
+
+    void addCourse(Participant participant, CourseDto courseDto);
 
     Participant getUser(int id);
 

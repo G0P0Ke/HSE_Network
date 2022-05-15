@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/api/task")
 public class TaskController {
 
     @Autowired
@@ -22,28 +22,11 @@ public class TaskController {
     @Autowired
     private ParticipantService participantService;
 
-    @PostMapping()
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ASSISTANT')")
-    public ResponseEntity<String> createNewTask(@RequestParam("file")MultipartFile file,
-        @RequestParam("description") String description, @RequestParam("creator_id") int creatorId,
-        @RequestParam("date_finish") String date) {
-        Participant participant = participantService.getUser(creatorId);;
-        if (participant == null) {
-            throw new NoSuchParticipantException("There is no creator with ID = " + creatorId
-                + " in Database");
-        }
-        taskService.createTask(description, date, file, creatorId);
-        return ResponseEntity.ok("Task created successfully!");
-    }
 
     @GetMapping("/{id}")
     public Task showTask(@PathVariable int id) {
         return taskService.showTaskById(id);
     }
 
-    @GetMapping("/download/{id}")
-    public void downloadTask(@PathVariable int id) {
-        taskService.downloadTaskById(id);
-    }
 
 }
