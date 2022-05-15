@@ -1,5 +1,7 @@
 package com.andreev.coursework.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -18,14 +20,48 @@ public class Message {
     @Column(name = "date_send")
     private Date dateSend;
 
+    @JsonIgnore
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "chat_id")
     private Chat chat;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @JsonIgnore
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "user_id")
     private Participant sender;
 
     public Message() {
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Date getDateSend() {
+        return dateSend;
+    }
+
+    public void setDateSend(Date dateSend) {
+        this.dateSend = dateSend;
+    }
+
+    public Chat getChat() {
+        return chat;
+    }
+
+    public void setChat(Chat chat) {
+        this.chat = chat;
+    }
+
+    public Participant getSender() {
+        return sender;
+    }
+
+    public void setSender(Participant sender) {
+        this.sender = sender;
     }
 }

@@ -1,15 +1,15 @@
 package com.andreev.coursework.controller;
 
+import com.andreev.coursework.dto.ChatDto;
 import com.andreev.coursework.dto.StudentAddDto;
-import com.andreev.coursework.entity.Course;
-import com.andreev.coursework.entity.Participant;
-import com.andreev.coursework.entity.Task;
-import com.andreev.coursework.entity.UserCourseAgent;
+import com.andreev.coursework.entity.*;
 import com.andreev.coursework.exception.course.NoSuchCourseException;
 import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
 import com.andreev.coursework.exception.paricipant.NoSuchParticipantException;
+import com.andreev.coursework.response.ChatResponseDto;
 import com.andreev.coursework.response.CourseResponseDto;
 import com.andreev.coursework.response.TaskAddResponseDto;
+import com.andreev.coursework.service.chat.ChatService;
 import com.andreev.coursework.service.course.CourseService;
 import com.andreev.coursework.service.participant.ParticipantService;
 import com.andreev.coursework.service.task.TaskService;
@@ -31,17 +31,19 @@ public class CourseController {
     private final CourseService courseService;
     private final ParticipantService participantService;
     private final UserCourseAgentService userCourseAgentService;
+    private final ChatService chatService;
 
     public CourseController(
         CourseService courseService,
         ParticipantService participantService,
         UserCourseAgentService userCourseAgentService,
-        TaskService taskService
-    ) {
+        TaskService taskService,
+        ChatService chatService) {
         this.courseService = courseService;
         this.participantService = participantService;
         this.userCourseAgentService = userCourseAgentService;
         this.taskService = taskService;
+        this.chatService = chatService;
     }
 
     @GetMapping("/{courseId}")
@@ -128,12 +130,20 @@ public class CourseController {
     }
 
     @GetMapping("/{courseId}/task")
+    @Operation(
+        summary = "Получить все задания в курсе",
+        description = "courseId - id курса, подставляемый в url"
+    )
     public List<Task> getAllTask(@PathVariable int courseId, Authentication authentication) {
         Course course = checkCourseAndUserData(courseId, authentication);
         return course.getTaskList();
     }
 
     @PostMapping("/{courseId}/download/{taskId}")
+    @Operation(
+        summary = "Скачать задание по courseId & taskId",
+        description = "Скачать могут только члены курса"
+    )
     public void downloadTask(
         @PathVariable int courseId,
         @PathVariable int taskId,
@@ -142,6 +152,42 @@ public class CourseController {
         ) {
         Course course = checkCourseAndUserData(courseId, authentication);
         taskService.downloadTaskById(taskId, path);
+    }
+
+    @PostMapping("/{courseId}/addChat")
+    public ResponseEntity<ChatResponseDto> addChat(
+        @PathVariable int courseId,
+        Authentication authentication,
+        @RequestBody ChatDto chatDto
+    ) {
+        Course course = checkCourseAndUserData(courseId, authentication);
+        if (!checkUserRoleInCourse(course, authentication)) {
+            throw new NoParticipantRightsException("This user does not have the role of teacher and assistant");
+        }
+        Participant creator = participantService.findByMail(authentication.getName());
+        Chat chat = courseService.addChat(course, chatDto, creator);
+        Chat infoChat = chatService.getChatByCourseAndDescription(chat.getDescription(), course);
+        return ResponseEntity.ok(new ChatResponseDto(infoChat.getId(), infoChat.getDescription(), infoChat.getCreator().getMail()));
+    }
+
+    @GetMapping("/{courseId}/chat")
+    @Operation(
+        summary = "Получение всех чатов курса по его Id"
+    )
+    public List<Chat> getChat(@PathVariable int courseId, Authentication authentication) {
+        Course course = checkCourseAndUserData(courseId, authentication);
+        return courseService.getChat(course);
+    }
+
+
+    public boolean checkUserRoleInCourse(Course course, Authentication authentication) {
+        Participant participant = participantService.findByMail(authentication.getName());
+        UserCourseAgent userCourseAgent = userCourseAgentService.findUserCourseAgent(course, participant);
+        return switch (userCourseAgent.getRole().getName()) {
+            case ROLE_ASSISTANT -> true;
+            case ROLE_TEACHER -> true;
+            default -> false;
+        };
     }
 
     public Course checkCourseAndUserData(int courseId, Authentication authentication) {

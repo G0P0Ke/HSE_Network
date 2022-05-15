@@ -25,11 +25,11 @@ public class Task {
     @Type(type="org.hibernate.type.MaterializedBlobType")
     private byte[] pdf;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "creator_id")
     private Participant creator;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "course_id")
     private Course course;
 

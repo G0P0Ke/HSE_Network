@@ -75,7 +75,7 @@ public class ParticipantController {
         summary = "Получение всех чатов пользователя",
         description = "id - id пользователя"
     )
-    public List<Chat> getAllChatsByParticipantId(@PathVariable int id) {
+    public Set<Chat> getAllChatsByParticipantId(@PathVariable int id) {
         Participant participant = participantService.getUser(id);
         if (participant == null) {
             throw new NoSuchParticipantException("There is no participant with ID = " + id

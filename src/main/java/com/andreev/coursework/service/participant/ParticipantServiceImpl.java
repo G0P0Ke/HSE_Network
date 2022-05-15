@@ -12,6 +12,7 @@ import com.andreev.coursework.entity.UserCourseAgent;
 import com.andreev.coursework.entity.security.RoleName;
 import com.andreev.coursework.service.MailSender;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -130,5 +131,17 @@ public class ParticipantServiceImpl implements ParticipantService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean checkUserRoleInCourse(Course course, Authentication authentication) {
+        Participant participant = findByMail(authentication.getName());
+        UserCourseAgent userCourseAgent = userCourseAgentRepository
+            .findUserCourseAgentByCourseAndParticipant(course, participant);
+        return switch (userCourseAgent.getRole().getName()) {
+            case ROLE_ASSISTANT -> true;
+            case ROLE_TEACHER -> true;
+            default -> false;
+        };
     }
 }

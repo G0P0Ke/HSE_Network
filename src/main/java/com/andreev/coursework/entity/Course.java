@@ -2,7 +2,6 @@ package com.andreev.coursework.entity;
 
 import com.andreev.coursework.entity.security.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -126,6 +125,14 @@ public class Course {
         }
         taskList.add(task);
         task.setCourse(this);
+    }
+
+    public void addChatToList(Chat chat) {
+        if (chatList == null) {
+            chatList = new ArrayList<>();
+        }
+        chatList.add(chat);
+        chat.setCourse(this);
     }
 
 }

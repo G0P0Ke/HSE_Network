@@ -41,20 +41,20 @@ public class Participant {
     private String password;
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL
+    @OneToMany(cascade = {CascadeType.REFRESH, CascadeType.PERSIST}
         , mappedBy = "creator"
         , fetch = FetchType.LAZY)
     private List<Chat> createdChatList;
 
     @JsonIgnore
-    @ManyToMany(cascade = CascadeType.ALL,
+    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.PERSIST},
         fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_chat"
         , joinColumns = @JoinColumn(name = "user_id")
         , inverseJoinColumns = @JoinColumn(name = "chat_id")
     )
-    private List<Chat> chatList;
+    private Set<Chat> chatList;
 
     @JsonIgnore
     @OneToMany(mappedBy = "participant")
@@ -83,7 +83,7 @@ public class Participant {
 
     public void addChatToParticipant(Chat chat) {
         if (chatList == null) {
-            chatList = new ArrayList<>();
+            chatList = new HashSet<>();
         }
         chatList.add(chat);
     }
@@ -160,11 +160,18 @@ public class Participant {
         return taskList;
     }
 
-    public List<Chat> getChatList() {
+    public Set<Chat> getChatList() {
         return chatList;
     }
 
     public Set<UserCourseAgent> getUserCourseSet() {
         return userCourseSet;
+    }
+
+    public void addCreatedChatToList(Chat chat) {
+        if (createdChatList == null) {
+            createdChatList = new ArrayList<>();
+        }
+        createdChatList.add(chat);
     }
 }

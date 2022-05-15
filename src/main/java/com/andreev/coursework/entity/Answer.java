@@ -17,11 +17,11 @@ public class Answer {
     @Column(name = "date_send")
     private Date dateSend;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "task_id")
     private Task task;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "student_id")
     private Participant user;
 
