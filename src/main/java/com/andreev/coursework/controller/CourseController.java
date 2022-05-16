@@ -1,11 +1,12 @@
 package com.andreev.coursework.controller;
 
 import com.andreev.coursework.dto.ChatDto;
+import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.StudentAddDto;
 import com.andreev.coursework.entity.*;
 import com.andreev.coursework.exception.course.NoSuchCourseException;
 import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
-import com.andreev.coursework.exception.paricipant.NoSuchParticipantException;
+import com.andreev.coursework.exception.paricipant.NoSuchObjectException;
 import com.andreev.coursework.response.ChatResponseDto;
 import com.andreev.coursework.response.CourseResponseDto;
 import com.andreev.coursework.response.TaskAddResponseDto;
@@ -79,7 +80,7 @@ public class CourseController {
         }
         Participant student = participantService.getUser(studentAddDto.getStudentId());
         if (student == null) {
-            throw new NoSuchParticipantException("There isn't student with id " + studentAddDto.getStudentId()
+            throw new NoSuchObjectException("There isn't student with id " + studentAddDto.getStudentId()
                 + " in Database");
         }
         courseService.addStudent(course, student, studentAddDto.getRoleName());
@@ -149,12 +150,13 @@ public class CourseController {
         @PathVariable int taskId,
         Authentication authentication,
         @RequestBody String path
-        ) {
+    ) {
         Course course = checkCourseAndUserData(courseId, authentication);
         taskService.downloadTaskById(taskId, path);
     }
 
     @PostMapping("/{courseId}/addChat")
+    @Operation(summary = "Создание чата в курсе")
     public ResponseEntity<ChatResponseDto> addChat(
         @PathVariable int courseId,
         Authentication authentication,
@@ -171,14 +173,54 @@ public class CourseController {
     }
 
     @GetMapping("/{courseId}/chat")
-    @Operation(
-        summary = "Получение всех чатов курса по его Id"
-    )
+    @Operation(summary = "Получение всех чатов курса по его Id")
     public List<Chat> getChat(@PathVariable int courseId, Authentication authentication) {
         Course course = checkCourseAndUserData(courseId, authentication);
         return courseService.getChat(course);
     }
 
+    @PutMapping("/{courseId}/update")
+    @Operation(summary = "Обновление инфомрации о курсе")
+    public ResponseEntity<CourseResponseDto> updateCourse(
+        @PathVariable int courseId,
+        @RequestBody CourseDto courseDto,
+        Authentication authentication
+    ) {
+        Course course = checkCourseAndUserData(courseId, authentication);
+        Participant teacher = participantService.findByMail(authentication.getName());
+        if (!teacher.isTeacher()) {
+            throw new NoParticipantRightsException("User with ID = " + teacher.getId()
+                + " is not a teacher");
+        }
+        Course updatedCourse = courseService.updateCourseInfo(course, courseDto);
+        CourseResponseDto courseResponseDto = new CourseResponseDto();
+        courseResponseDto.setDescription(updatedCourse.getDescription());
+        courseResponseDto.setName(updatedCourse.getName());
+        return ResponseEntity.ok(courseResponseDto);
+    }
+
+    @PostMapping("/{courseId}/{taskId}/addAnswer")
+    @Operation(summary = "Добавление ответа на задание")
+    public ResponseEntity<String> addTask(
+        @PathVariable int courseId,
+        @PathVariable int taskId,
+        @RequestParam("date_send") String date,
+        @RequestParam("file") MultipartFile solution,
+        Authentication authentication
+    ) {
+        Course course = checkCourseAndUserData(courseId, authentication);
+        Participant student = participantService.findByMail(authentication.getName());
+        Task task = taskService.showTaskById(taskId);
+        if (task == null) {
+            throw new NoSuchObjectException("There is no task with ID = " + taskId
+                + " in Database");
+        }
+        Answer answer = taskService.addAnswer(date, solution, task, student);
+        if (answer == null) {
+            return ResponseEntity.badRequest().body("Can not add answer");
+        }
+        return ResponseEntity.ok("Answer added");
+    }
 
     public boolean checkUserRoleInCourse(Course course, Authentication authentication) {
         Participant participant = participantService.findByMail(authentication.getName());
@@ -199,7 +241,7 @@ public class CourseController {
         Participant participant = participantService.findByMail(authentication.getName());
         UserCourseAgent userCourseAgent = userCourseAgentService.findUserCourseAgent(course, participant);
         if (userCourseAgent == null) {
-            throw new NoSuchParticipantException("There isn't participant with id " + participant.getId()
+            throw new NoSuchObjectException("There isn't participant with id " + participant.getId()
                 + " in course with id " + courseId);
         }
         return course;

@@ -2,7 +2,7 @@ create table answer
 (
     id         integer not null auto_increment,
     date_send  datetime(6),
-    data       tinyblob,
+    data       longblob,
     task_id    integer,
     student_id integer,
     primary key (id)

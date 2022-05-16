@@ -2,6 +2,7 @@ package com.andreev.coursework.service.course;
 
 import com.andreev.coursework.dao.*;
 import com.andreev.coursework.dto.ChatDto;
+import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.entity.*;
 import com.andreev.coursework.entity.security.Role;
 import com.andreev.coursework.entity.security.RoleName;
@@ -65,6 +66,18 @@ public class CourseServiceImpl implements CourseService {
         return course.getChatList();
     }
 
+    @Override
+    public Course updateCourseInfo(Course course, CourseDto courseDto) {
+        if (!courseDto.getName().isEmpty()) {
+            course.setName(courseDto.getName());
+        }
+        if (!courseDto.getDescription().isEmpty()) {
+            course.setDescription(courseDto.getDescription());
+        }
+        courseRepository.save(course);
+        return course;
+    }
+
     private Role validateAndGetRegisteredRoles(String roleString) {
 
         RoleName registeredRoleName = extractRoleNameFromRoleString(roleString);
@@ -84,5 +97,4 @@ public class CourseServiceImpl implements CourseService {
                 throw new ParticipantRegistrationException("Invalid role was given for registration");
         }
     }
-
 }

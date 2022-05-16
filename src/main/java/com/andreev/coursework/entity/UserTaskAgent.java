@@ -29,4 +29,28 @@ public class UserTaskAgent {
     public void setGrade(int grade) {
         this.grade = grade;
     }
+
+    public UserTaskAgentPK getId() {
+        return id;
+    }
+
+    public void setId(UserTaskAgentPK id) {
+        this.id = id;
+    }
+
+    public Participant getStudent() {
+        return student;
+    }
+
+    public void setStudent(Participant student) {
+        this.student = student;
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
+    }
 }

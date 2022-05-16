@@ -9,6 +9,9 @@ public class CourseResponseDto {
     private String description;
     private Set<Participant> participantSet;
 
+    public CourseResponseDto() {
+    }
+
     public CourseResponseDto(String name, String description, Set<Participant> participantSet) {
         this.name = name;
         this.description = description;

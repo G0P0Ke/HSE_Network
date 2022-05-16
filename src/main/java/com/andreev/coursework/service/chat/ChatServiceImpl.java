@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ChatServiceImpl implements ChatService{
+public class ChatServiceImpl implements ChatService {
 
     private final ChatRepository chatRepository;
     private final ParticipantRepository participantRepository;
@@ -86,7 +86,7 @@ public class ChatServiceImpl implements ChatService{
 
     @Override
     public boolean findParticipant(Chat chat, Participant sender) {
-        for (var par: chat.getParticipantList()) {
+        for (var par : chat.getParticipantList()) {
             if (par == sender) {
                 return true;
             }

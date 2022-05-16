@@ -22,7 +22,7 @@ public class Task {
     private Date dateFinish;
 
     @Column(name = "data")
-    @Type(type="org.hibernate.type.MaterializedBlobType")
+    @Type(type = "org.hibernate.type.MaterializedBlobType")
     private byte[] pdf;
 
     @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST})
@@ -113,5 +113,9 @@ public class Task {
 
     public void setAnswerList(List<Answer> answerList) {
         this.answerList = answerList;
+    }
+
+    public int getId() {
+        return id;
     }
 }

@@ -7,5 +7,4 @@ import com.andreev.coursework.entity.UserCourseAgent;
 public interface UserCourseAgentService {
 
     UserCourseAgent findUserCourseAgent(Course course, Participant participant);
-
 }

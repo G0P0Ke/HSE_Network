@@ -73,5 +73,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and().sessionManagement().disable()
             .exceptionHandling().authenticationEntryPoint(unauthorizedHandler);
     }
-
 }

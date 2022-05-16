@@ -10,7 +10,7 @@ public class ParticipantGlobalExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<ParticipantIncorrectData> handleException(
-        NoSuchParticipantException exception) {
+        NoSuchObjectException exception) {
         ParticipantIncorrectData data = new ParticipantIncorrectData();
         data.setInfo(exception.getMessage());
 

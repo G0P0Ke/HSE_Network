@@ -1,5 +1,8 @@
 package com.andreev.coursework.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -12,15 +15,18 @@ public class Answer {
     private int id;
 
     @Column(name = "data")
+    @Type(type = "org.hibernate.type.MaterializedBlobType")
     private byte[] solution;
 
     @Column(name = "date_send")
     private Date dateSend;
 
+    @JsonIgnore
     @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "task_id")
     private Task task;
 
+    @JsonIgnore
     @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "student_id")
     private Participant user;

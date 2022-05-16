@@ -101,7 +101,7 @@ public class Course {
             participants = new HashSet<>();
         }
         Set<Participant> courseParticipant = new HashSet<>();
-        for (var el: participants) {
+        for (var el : participants) {
             courseParticipant.add(el.getParticipant());
         }
         return courseParticipant;
@@ -134,5 +134,4 @@ public class Course {
         chatList.add(chat);
         chat.setCourse(this);
     }
-
 }

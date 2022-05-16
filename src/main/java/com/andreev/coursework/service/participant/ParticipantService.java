@@ -4,6 +4,7 @@ import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
 import com.andreev.coursework.entity.Course;
 import com.andreev.coursework.entity.Participant;
+import com.andreev.coursework.entity.Task;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -16,8 +17,6 @@ public interface ParticipantService {
 
     List<Participant> getAllUsers();
 
-    void saveUser(Participant user);
-
     void updateProfileUser(Participant participant, ProfileDto profileDto);
 
     void addCourse(Participant participant, CourseDto courseDto);
@@ -29,4 +28,8 @@ public interface ParticipantService {
     boolean isActive(String email, String code);
 
     boolean checkUserRoleInCourse(Course course, Authentication authentication);
+
+    boolean addTaskToStudent(Participant student, Task task);
+
+    void gradeParticipantByTask(Participant student, Task task, int grade);
 }

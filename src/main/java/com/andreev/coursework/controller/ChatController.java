@@ -27,9 +27,7 @@ public class ChatController {
     }
 
     @DeleteMapping("/{chatId}")
-    @Operation(
-        summary = "Удаление чата по его id"
-    )
+    @Operation(summary = "Удаление чата по его id")
     public ResponseEntity<String> deleteChat(@PathVariable int chatId) {
         if (chatService.deleteChatById(chatId)) {
             return ResponseEntity.ok("Chat deleted");
@@ -38,6 +36,7 @@ public class ChatController {
     }
 
     @PostMapping("/{chatId}/addMember")
+    @Operation(summary = "добавить участника в чат")
     public ResponseEntity<String> addMember(
         @PathVariable int chatId,
         @RequestBody StudentAddDto studentAddDto,
@@ -58,6 +57,7 @@ public class ChatController {
     }
 
     @PostMapping("/{chatId}/addMessage")
+    @Operation(summary = "отправить сообщение в чат")
     public ResponseEntity<String> addMessage(
         @PathVariable int chatId,
         @RequestBody MessageDto messageDto,
@@ -75,13 +75,13 @@ public class ChatController {
         return ResponseEntity.badRequest().body("Can not send message");
     }
 
-    private boolean checkMember(Chat chat, Participant sender) {
-        return chatService.findParticipant(chat, sender);
-    }
-
     @GetMapping("/{chatId}/message")
+    @Operation(summary = "получить все сообщения в чате")
     public List<Message> getAllMessage(@PathVariable int chatId) {
         return chatService.getAllMessage(chatId);
     }
 
+    private boolean checkMember(Chat chat, Participant sender) {
+        return chatService.findParticipant(chat, sender);
+    }
 }

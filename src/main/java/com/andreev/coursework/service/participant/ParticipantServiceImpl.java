@@ -1,17 +1,11 @@
 package com.andreev.coursework.service.participant;
 
-import com.andreev.coursework.dao.CourseRepository;
-import com.andreev.coursework.dao.ParticipantRepository;
-import com.andreev.coursework.dao.RoleRepository;
-import com.andreev.coursework.dao.UserCourseAgentRepository;
+import com.andreev.coursework.dao.*;
 import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
-import com.andreev.coursework.entity.Course;
-import com.andreev.coursework.entity.Participant;
-import com.andreev.coursework.entity.UserCourseAgent;
+import com.andreev.coursework.entity.*;
 import com.andreev.coursework.entity.security.RoleName;
 import com.andreev.coursework.service.MailSender;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,21 +18,28 @@ import java.util.UUID;
 
 @Service
 public class ParticipantServiceImpl implements ParticipantService {
-    @Autowired
-    private UserCourseAgentRepository userCourseAgentRepository;
-
-    @Autowired
-    private CourseRepository courseRepository;
-
-    @Autowired
-    private ParticipantRepository participantRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private MailSender mailSender;
+    private final UserTaskAgentRepository userTaskAgentRepository;
+    private final UserCourseAgentRepository userCourseAgentRepository;
+    private final CourseRepository courseRepository;
+    private final ParticipantRepository participantRepository;
+    private final RoleRepository roleRepository;
+    private final MailSender mailSender;
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public ParticipantServiceImpl(UserTaskAgentRepository userTaskAgentRepository,
+        UserCourseAgentRepository userCourseAgentRepository,
+        CourseRepository courseRepository,
+        ParticipantRepository participantRepository,
+        RoleRepository roleRepository,
+        MailSender mailSender
+    ) {
+        this.userTaskAgentRepository = userTaskAgentRepository;
+        this.userCourseAgentRepository = userCourseAgentRepository;
+        this.courseRepository = courseRepository;
+        this.participantRepository = participantRepository;
+        this.roleRepository = roleRepository;
+        this.mailSender = mailSender;
+    }
 
     @Override
     public List<Participant> getAllUsers() {
@@ -46,13 +47,27 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    public void saveUser(Participant user) {
-        participantRepository.save(user);
+    public boolean addTaskToStudent(Participant student, Task task) {
+        UserTaskAgent userTaskAgent = student.addTaskToList(task);
+        if (userTaskAgent != null) {
+            userTaskAgentRepository.save(userTaskAgent);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void gradeParticipantByTask(Participant student, Task task, int grade) {
+        UserTaskAgent userTaskAgent = userTaskAgentRepository.findUserTaskAgentByTaskAndStudent(task, student);
+        if (userTaskAgent != null) {
+            userTaskAgent.setGrade(grade);
+            userTaskAgentRepository.save(userTaskAgent);
+        }
     }
 
     @Override
     public void updateProfileUser(Participant participant, ProfileDto profileDto) {
-        if (!profileDto.getFirstName().isEmpty())  {
+        if (!profileDto.getFirstName().isEmpty()) {
             participant.setFirstName(profileDto.getFirstName());
         }
         if (!profileDto.getSurname().isEmpty()) {

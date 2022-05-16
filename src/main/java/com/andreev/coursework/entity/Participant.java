@@ -174,4 +174,22 @@ public class Participant {
         }
         createdChatList.add(chat);
     }
+
+    public UserTaskAgent addTaskToList(Task task) {
+        if (taskList == null) {
+            taskList = new HashSet<>();
+        }
+        UserTaskAgent userTaskAgent = new UserTaskAgent();
+        userTaskAgent.setStudent(this);
+        userTaskAgent.setTask(task);
+
+        UserTaskAgentPK userTaskAgentPK = new UserTaskAgentPK();
+        userTaskAgentPK.setUser_id(this.getId());
+        userTaskAgentPK.setTask_id(task.getId());
+        userTaskAgent.setId(userTaskAgentPK);
+
+        taskList.add(userTaskAgent);
+
+        return userTaskAgent;
+    }
 }

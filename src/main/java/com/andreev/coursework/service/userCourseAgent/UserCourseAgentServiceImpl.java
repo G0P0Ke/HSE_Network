@@ -7,7 +7,7 @@ import com.andreev.coursework.entity.UserCourseAgent;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserCourseAgentServiceImpl implements UserCourseAgentService{
+public class UserCourseAgentServiceImpl implements UserCourseAgentService {
 
     private final UserCourseAgentRepository userCourseAgentRepository;
 
