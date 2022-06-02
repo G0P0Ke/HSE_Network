@@ -11,10 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class ParticipantServiceImpl implements ParticipantService {
@@ -44,6 +41,16 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public List<Participant> getAllUsers() {
         return participantRepository.findAll();
+    }
+
+    @Override
+    public List<Course> getAllCourses(Participant participant) {
+        Set<UserCourseAgent> userCourseAgentList = participant.getUserCourseSet();
+        List<Course> courseList = new ArrayList<>();
+        for (UserCourseAgent el : userCourseAgentList) {
+            courseList.add(el.getCourse());
+        }
+        return courseList;
     }
 
     @Override

@@ -35,6 +35,19 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public String getCreatorName(Course course) {
+        Participant teacher = null;
+        for (UserCourseAgent el : course.getParticipants()) {
+            if (el.getParticipant().isTeacher()) {
+                teacher = el.getParticipant();
+                break;
+            }
+        }
+        String name = String.format("%s %s %s", teacher.getSecondName(), teacher.getFirstName(), teacher.getPatronymic());
+        return name;
+    }
+
+    @Override
     public void addStudent(Course course, Participant student, String roleName) {
         UserCourseAgent userCourseAgent = course.addParticipant(student, validateAndGetRegisteredRoles(roleName));
         userCourseAgentRepository.save(userCourseAgent);

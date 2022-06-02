@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.regex.Pattern;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/security")
@@ -35,6 +37,10 @@ public class SecurityController {
     )
     @Operation(summary = "Получение кода для активации пользователя")
     public ResponseEntity<String> login(@RequestBody EntryDto entryDto) {
+        boolean checkMail = mailValidation(entryDto.getEmail());
+        if (!checkMail) {
+            return ResponseEntity.badRequest().body("Invalid email");
+        }
         this.participantService.loginUser(entryDto.getEmail());
         return ResponseEntity.ok("Code send successfully!");
     }
@@ -59,4 +65,10 @@ public class SecurityController {
             return ResponseEntity.badRequest().body(new JwtResponse(""));
         }
     }
+
+    private static boolean mailValidation(String email) {
+        String regex = "^[-.A-Za-zА-Яа-я_\\d]+@edu\\.hse\\.ru$";
+        return Pattern.matches(regex, email);
+    }
+
 }

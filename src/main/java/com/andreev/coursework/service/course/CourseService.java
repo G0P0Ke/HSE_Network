@@ -10,6 +10,8 @@ public interface CourseService {
 
     Course findById(int courseId);
 
+    String getCreatorName(Course course);
+
     void addStudent(Course course, Participant student, String roleName);
 
     void addTaskToCourse(Task task, Course course);

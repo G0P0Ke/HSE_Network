@@ -8,7 +8,6 @@ import java.util.Date;
 public class TaskAddResponseDto {
     private String description;
     private Date dateFinish;
-    private byte[] pdf;
     private Participant creator;
     private Course course;
 
@@ -29,14 +28,6 @@ public class TaskAddResponseDto {
 
     public void setDateFinish(Date dateFinish) {
         this.dateFinish = dateFinish;
-    }
-
-    public byte[] getPdf() {
-        return pdf;
-    }
-
-    public void setPdf(byte[] pdf) {
-        this.pdf = pdf;
     }
 
     public Participant getCreator() {

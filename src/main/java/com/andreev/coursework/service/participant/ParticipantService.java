@@ -17,6 +17,8 @@ public interface ParticipantService {
 
     List<Participant> getAllUsers();
 
+    List<Course> getAllCourses(Participant participant);
+
     void updateProfileUser(Participant participant, ProfileDto profileDto);
 
     void addCourse(Participant participant, CourseDto courseDto);

@@ -126,7 +126,6 @@ public class CourseController {
         taskAddResponseDto.setCreator(task.getCreator());
         taskAddResponseDto.setDescription(task.getDescription());
         taskAddResponseDto.setDateFinish(task.getDateFinish());
-        taskAddResponseDto.setPdf(task.getPdf());
         return ResponseEntity.ok(taskAddResponseDto);
     }
 

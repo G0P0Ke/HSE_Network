@@ -2,18 +2,19 @@ package com.andreev.coursework.controller;
 
 import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
-import com.andreev.coursework.entity.Chat;
-import com.andreev.coursework.entity.Participant;
-import com.andreev.coursework.entity.Task;
-import com.andreev.coursework.entity.UserTaskAgent;
+import com.andreev.coursework.entity.*;
 import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
 import com.andreev.coursework.exception.paricipant.NoSuchObjectException;
+import com.andreev.coursework.response.SimpleCourseResponseDto;
+import com.andreev.coursework.service.course.CourseService;
 import com.andreev.coursework.service.participant.ParticipantService;
 import com.andreev.coursework.service.task.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -23,10 +24,13 @@ public class ParticipantController {
 
     private final ParticipantService participantService;
     private final TaskService taskService;
+    private final CourseService courseService;
 
-    public ParticipantController(ParticipantService participantService, TaskService taskService) {
+    public ParticipantController(ParticipantService participantService, TaskService taskService,
+        CourseService courseService) {
         this.participantService = participantService;
         this.taskService = taskService;
+        this.courseService = courseService;
     }
 
     @GetMapping()
@@ -35,10 +39,10 @@ public class ParticipantController {
         return participantService.getAllUsers();
     }
 
-    @GetMapping("/{id}/profile")
+    @GetMapping("/profile")
     @Operation(summary = "Получение профиля пользователя по id")
-    public Participant findParticipantById(@PathVariable int id) {
-        return participantService.getUser(id);
+    public Participant findParticipantById(Authentication authentication) {
+        return participantService.findByMail(authentication.getName());
     }
 
     @PutMapping("/{id}/profile/update")
@@ -57,6 +61,21 @@ public class ParticipantController {
         }
         participantService.updateProfileUser(participant, profileDto);
         return ResponseEntity.ok("Profile updated");
+    }
+
+    @GetMapping("/getCourse")
+    @Operation(summary = "Получить список всех курсов пользователя")
+    public List<SimpleCourseResponseDto> getAllCourse(Authentication authentication) {
+        Participant participant = participantService.findByMail(authentication.getName());
+        List<Course> courseList = participantService.getAllCourses(participant);
+
+        List<SimpleCourseResponseDto> answer = new ArrayList<>();
+        for (Course course : courseList) {
+            String name = courseService.getCreatorName(course);
+            answer.add(new SimpleCourseResponseDto(course.getId(), course.getName(), course.getDescription(), name));
+        }
+
+        return answer;
     }
 
     @GetMapping("/{id}/task")

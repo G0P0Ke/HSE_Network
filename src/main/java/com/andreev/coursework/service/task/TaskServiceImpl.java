@@ -49,7 +49,6 @@ public class TaskServiceImpl implements TaskService {
             task.setPdf(pdf);
             task.setCreator(creator);
             courseService.addTaskToCourse(task, course);
-            taskRepository.save(task);
             return task;
         } catch (Exception e) {
             e.printStackTrace();
