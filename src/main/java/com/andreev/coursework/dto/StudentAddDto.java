@@ -1,11 +1,13 @@
 package com.andreev.coursework.dto;
 
+import com.andreev.coursework.entity.security.RoleName;
+
 /**
  * todo Document type StudentAddDto
  */
 public class StudentAddDto {
     int studentId;
-    String roleName;
+    RoleName roleName;
 
     public StudentAddDto() {
     }
@@ -18,11 +20,11 @@ public class StudentAddDto {
         this.studentId = studentId;
     }
 
-    public String getRoleName() {
+    public RoleName getRoleName() {
         return roleName;
     }
 
-    public void setRoleName(String roleName) {
+    public void setRoleName(RoleName roleName) {
         this.roleName = roleName;
     }
 }

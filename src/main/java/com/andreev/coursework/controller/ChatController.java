@@ -10,8 +10,15 @@ import com.andreev.coursework.service.participant.ParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -38,9 +45,9 @@ public class ChatController {
     @PostMapping("/{chatId}/addMember")
     @Operation(summary = "добавить участника в чат")
     public ResponseEntity<String> addMember(
-        @PathVariable int chatId,
-        @RequestBody StudentAddDto studentAddDto,
-        Authentication authentication) {
+            @PathVariable int chatId,
+            @Valid @RequestBody StudentAddDto studentAddDto,
+            Authentication authentication) {
         Chat chat = chatService.getChatById(chatId);
         if (chat == null) {
             return ResponseEntity.badRequest().body("There is no chat with id = " + chatId + " in database");
@@ -59,17 +66,17 @@ public class ChatController {
     @PostMapping("/{chatId}/addMessage")
     @Operation(summary = "отправить сообщение в чат")
     public ResponseEntity<String> addMessage(
-        @PathVariable int chatId,
-        @RequestBody MessageDto messageDto,
-        Authentication authentication
+            @PathVariable int chatId,
+            @Valid @RequestBody MessageDto messageDto,
+            Authentication authentication
     ) {
         Chat chat = chatService.getChatById(chatId);
         if (chat == null) {
             return ResponseEntity.badRequest().body("There is no chat with id = " + chatId + " in database");
         }
         Participant sender = participantService.findByMail(authentication.getName());
-        boolean tryAdd = chatService.addMessage(messageDto, chat, sender);
-        if (checkMember(chat, sender) && tryAdd) {
+        chatService.addMessage(messageDto, chat, sender);
+        if (checkMember(chat, sender)) {
             return ResponseEntity.ok("Message sent");
         }
         return ResponseEntity.badRequest().body("Can not send message");
