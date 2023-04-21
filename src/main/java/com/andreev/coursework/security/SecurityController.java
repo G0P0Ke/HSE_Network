@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.validation.Valid;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/security")
@@ -38,7 +40,7 @@ public class SecurityController {
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     )
     @Operation(summary = "Получение кода для активации пользователя")
-    public ResponseEntity<String> login(@RequestBody EntryDto entryDto) {
+    public ResponseEntity<String> login(@Valid @RequestBody EntryDto entryDto) {
         this.participantService.loginUser(entryDto.getEmail());
         return ResponseEntity.ok("Code send successfully!");
     }
