@@ -50,7 +50,7 @@ public class SecurityController {
             consumes = "application/json"
     )
     @Operation(summary = "Аутентификация пользователя")
-    public ResponseEntity<JwtResponse> authenticateEmployee(@RequestBody EntryDto entryDto) {
+    public ResponseEntity<JwtResponse> authenticateEmployee(@Valid @RequestBody EntryDto entryDto) {
         boolean entryFlag = participantService.isActive(entryDto.getEmail(), entryDto.getCode());
         if (entryFlag) {
             UsernamePasswordAuthenticationToken authToken =
