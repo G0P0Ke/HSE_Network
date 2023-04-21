@@ -1,9 +1,17 @@
 package com.andreev.coursework.service.participant;
 
-import com.andreev.coursework.dao.*;
+import com.andreev.coursework.dao.CourseRepository;
+import com.andreev.coursework.dao.ParticipantRepository;
+import com.andreev.coursework.dao.RoleRepository;
+import com.andreev.coursework.dao.UserCourseAgentRepository;
+import com.andreev.coursework.dao.UserTaskAgentRepository;
 import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
-import com.andreev.coursework.entity.*;
+import com.andreev.coursework.entity.Course;
+import com.andreev.coursework.entity.Participant;
+import com.andreev.coursework.entity.Task;
+import com.andreev.coursework.entity.UserCourseAgent;
+import com.andreev.coursework.entity.UserTaskAgent;
 import com.andreev.coursework.entity.security.RoleName;
 import com.andreev.coursework.service.MailSender;
 import org.springframework.security.core.Authentication;
@@ -11,7 +19,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class ParticipantServiceImpl implements ParticipantService {
@@ -21,14 +34,14 @@ public class ParticipantServiceImpl implements ParticipantService {
     private final ParticipantRepository participantRepository;
     private final RoleRepository roleRepository;
     private final MailSender mailSender;
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public ParticipantServiceImpl(UserTaskAgentRepository userTaskAgentRepository,
-        UserCourseAgentRepository userCourseAgentRepository,
-        CourseRepository courseRepository,
-        ParticipantRepository participantRepository,
-        RoleRepository roleRepository,
-        MailSender mailSender
+                                  UserCourseAgentRepository userCourseAgentRepository,
+                                  CourseRepository courseRepository,
+                                  ParticipantRepository participantRepository,
+                                  RoleRepository roleRepository,
+                                  MailSender mailSender
     ) {
         this.userTaskAgentRepository = userTaskAgentRepository;
         this.userCourseAgentRepository = userCourseAgentRepository;
@@ -74,18 +87,10 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     @Override
     public void updateProfileUser(Participant participant, ProfileDto profileDto) {
-        if (!profileDto.getFirstName().isEmpty()) {
-            participant.setFirstName(profileDto.getFirstName());
-        }
-        if (!profileDto.getSurname().isEmpty()) {
-            participant.setSecondName(profileDto.getSurname());
-        }
-        if (!profileDto.getPatronymic().isEmpty()) {
-            participant.setPatronymic(profileDto.getPatronymic());
-        }
-        if (!profileDto.getMail().isEmpty()) {
-            participant.setMail(profileDto.getMail());
-        }
+        participant.setFirstName(profileDto.getFirstName());
+        participant.setSecondName(profileDto.getSurname());
+        participant.setPatronymic(profileDto.getPatronymic());
+        participant.setMail(profileDto.getMail());
         participantRepository.save(participant);
     }
 
@@ -117,16 +122,16 @@ public class ParticipantServiceImpl implements ParticipantService {
         Participant user = participantRepository.findParticipantByMail(mail);
         if (user == null) {
             user = new Participant("", "", "", mail,
-                false, passwordEncoder.encode(mail));
+                    false, passwordEncoder.encode(mail));
         }
         user.setCode(generateCode());
         participantRepository.save(user);
 
         String message = String.format(
-            "Hello, %s! \n" +
-                "Your activation code: %s",
-            user.getMail(),
-            user.getCode()
+                "Hello, %s! \n" +
+                        "Your activation code: %s",
+                user.getMail(),
+                user.getCode()
         );
 
         mailSender.send(user.getMail(), "Activation code", message);
@@ -159,7 +164,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     public boolean checkUserRoleInCourse(Course course, Authentication authentication) {
         Participant participant = findByMail(authentication.getName());
         UserCourseAgent userCourseAgent = userCourseAgentRepository
-            .findUserCourseAgentByCourseAndParticipant(course, participant);
+                .findUserCourseAgentByCourseAndParticipant(course, participant);
         return switch (userCourseAgent.getRole().getName()) {
             case ROLE_ASSISTANT -> true;
             case ROLE_TEACHER -> true;

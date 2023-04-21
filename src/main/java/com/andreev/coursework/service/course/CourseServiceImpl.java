@@ -1,12 +1,19 @@
 package com.andreev.coursework.service.course;
 
-import com.andreev.coursework.dao.*;
+import com.andreev.coursework.dao.ChatRepository;
+import com.andreev.coursework.dao.CourseRepository;
+import com.andreev.coursework.dao.ParticipantRepository;
+import com.andreev.coursework.dao.RoleRepository;
+import com.andreev.coursework.dao.UserCourseAgentRepository;
 import com.andreev.coursework.dto.ChatDto;
 import com.andreev.coursework.dto.CourseDto;
-import com.andreev.coursework.entity.*;
+import com.andreev.coursework.entity.Chat;
+import com.andreev.coursework.entity.Course;
+import com.andreev.coursework.entity.Participant;
+import com.andreev.coursework.entity.Task;
+import com.andreev.coursework.entity.UserCourseAgent;
 import com.andreev.coursework.entity.security.Role;
 import com.andreev.coursework.entity.security.RoleName;
-import com.andreev.coursework.exception.paricipant.ParticipantRegistrationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +28,7 @@ public class CourseServiceImpl implements CourseService {
     private final ChatRepository chatRepository;
 
     public CourseServiceImpl(CourseRepository courseRepository, RoleRepository roleRepository, UserCourseAgentRepository userCourseAgentRepository,
-        ParticipantRepository participantRepository, ChatRepository chatRepository) {
+                             ParticipantRepository participantRepository, ChatRepository chatRepository) {
         this.courseRepository = courseRepository;
         this.roleRepository = roleRepository;
         this.userCourseAgentRepository = userCourseAgentRepository;
@@ -48,7 +55,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void addStudent(Course course, Participant student, String roleName) {
+    public void addStudent(Course course, Participant student, RoleName roleName) {
         UserCourseAgent userCourseAgent = course.addParticipant(student, validateAndGetRegisteredRoles(roleName));
         userCourseAgentRepository.save(userCourseAgent);
     }
@@ -81,33 +88,13 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course updateCourseInfo(Course course, CourseDto courseDto) {
-        if (!courseDto.getName().isEmpty()) {
-            course.setName(courseDto.getName());
-        }
-        if (!courseDto.getDescription().isEmpty()) {
-            course.setDescription(courseDto.getDescription());
-        }
+        course.setName(courseDto.getName());
+        course.setDescription(courseDto.getDescription());
         courseRepository.save(course);
         return course;
     }
 
-    private Role validateAndGetRegisteredRoles(String roleString) {
-
-        RoleName registeredRoleName = extractRoleNameFromRoleString(roleString);
-        Role registeredRole = roleRepository.findByName(registeredRoleName);
-        return registeredRole;
-    }
-
-    private RoleName extractRoleNameFromRoleString(String roleString) {
-        switch (roleString.trim().toLowerCase()) {
-            case "student":
-                return RoleName.ROLE_STUDENT;
-            case "teacher":
-                return RoleName.ROLE_TEACHER;
-            case "assistant":
-                return RoleName.ROLE_ASSISTANT;
-            default:
-                throw new ParticipantRegistrationException("Invalid role was given for registration");
-        }
+    private Role validateAndGetRegisteredRoles(RoleName registeredRoleName) {
+        return roleRepository.findByName(registeredRoleName);
     }
 }

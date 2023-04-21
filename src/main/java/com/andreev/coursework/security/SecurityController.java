@@ -11,9 +11,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.regex.Pattern;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -24,37 +26,33 @@ public class SecurityController {
     private final JwtProvider jwtProvider;
 
     public SecurityController(AuthenticationManager authenticationManager, JwtProvider jwtProvider,
-        ParticipantService participantService) {
+                              ParticipantService participantService) {
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.participantService = participantService;
     }
 
     @PostMapping(
-        value = "/login",
-        consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+            value = "/login",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     )
     @Operation(summary = "Получение кода для активации пользователя")
     public ResponseEntity<String> login(@RequestBody EntryDto entryDto) {
-        boolean checkMail = mailValidation(entryDto.getEmail());
-        if (!checkMail) {
-            return ResponseEntity.badRequest().body("Invalid email");
-        }
         this.participantService.loginUser(entryDto.getEmail());
         return ResponseEntity.ok("Code send successfully!");
     }
 
     @PostMapping(
-        value = "/entry",
-        consumes = "application/json"
+            value = "/entry",
+            consumes = "application/json"
     )
     @Operation(summary = "Аутентификация пользователя")
     public ResponseEntity<JwtResponse> authenticateEmployee(@RequestBody EntryDto entryDto) {
         boolean entryFlag = participantService.isActive(entryDto.getEmail(), entryDto.getCode());
         if (entryFlag) {
             UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(entryDto.getEmail(), entryDto.getEmail());
+                    new UsernamePasswordAuthenticationToken(entryDto.getEmail(), entryDto.getEmail());
             Authentication authentication = authenticationManager.authenticate(authToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -64,11 +62,6 @@ public class SecurityController {
         } else {
             return ResponseEntity.badRequest().body(new JwtResponse(""));
         }
-    }
-
-    private static boolean mailValidation(String email) {
-        String regex = "^[-.A-Za-zА-Яа-я_\\d]+@edu\\.hse\\.ru$";
-        return Pattern.matches(regex, email);
     }
 
 }
