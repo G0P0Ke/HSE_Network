@@ -178,7 +178,7 @@ public class CourseController {
         return courseService.getChat(course);
     }
 
-    @PutMapping("/{courseId}/update")
+    @PutMapping("/{courseId}/ ")
     @Operation(summary = "Обновление инфомрации о курсе")
     public ResponseEntity<CourseResponseDto> updateCourse(
         @PathVariable int courseId,
