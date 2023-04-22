@@ -1,7 +1,7 @@
 package com.andreev.coursework.controller;
 
 import com.andreev.coursework.dto.MessageDto;
-import com.andreev.coursework.dto.ResponseDTO;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.dto.StudentAddDto;
 import com.andreev.coursework.entity.Message;
 import com.andreev.coursework.service.chat.ChatService;
@@ -28,7 +28,7 @@ public class ChatController {
     @DeleteMapping("/{chatId}")
     @Operation(summary = "Удаление чата по его id")
     public ResponseEntity<String> deleteChat(@PathVariable int chatId) {
-        ResponseDTO response = chatService.deleteChat(chatId);
+        ResponseDto response = chatService.deleteChat(chatId);
         return ResponseEntity.status(response.status()).body(response.message());
     }
 
@@ -39,7 +39,7 @@ public class ChatController {
         @RequestBody StudentAddDto studentAddDto,
         Authentication authentication
     ) {
-        ResponseDTO response = chatService.addMember(chatId, studentAddDto.getStudentId(), authentication, participantService);
+        ResponseDto response = chatService.addMember(chatId, studentAddDto.getStudentId(), authentication, participantService);
         return ResponseEntity.status(response.status()).body(response.message());
     }
 
@@ -50,7 +50,7 @@ public class ChatController {
         @RequestBody MessageDto messageDto,
         Authentication authentication
     ) {
-        ResponseDTO response = chatService.addMessage(chatId, messageDto, authentication, participantService);
+        ResponseDto response = chatService.addMessage(chatId, messageDto, authentication, participantService);
         return ResponseEntity.status(response.status()).body(response.message());
     }
 

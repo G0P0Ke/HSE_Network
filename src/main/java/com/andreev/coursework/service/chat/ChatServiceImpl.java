@@ -4,7 +4,7 @@ import com.andreev.coursework.dao.ChatRepository;
 import com.andreev.coursework.dao.MessageRepository;
 import com.andreev.coursework.dao.ParticipantRepository;
 import com.andreev.coursework.dto.MessageDto;
-import com.andreev.coursework.dto.ResponseDTO;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.entity.Chat;
 import com.andreev.coursework.entity.Course;
 import com.andreev.coursework.entity.Message;
@@ -38,42 +38,42 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public ResponseDTO deleteChat(int chatId) {
+    public ResponseDto deleteChat(int chatId) {
         if (deleteChatById(chatId)) {
-            return new ResponseDTO(HttpStatus.OK, "Chat deleted");
+            return new ResponseDto(HttpStatus.OK, "Chat deleted");
         }
-        return new ResponseDTO(HttpStatus.BAD_REQUEST, "There is no chat with id = " + chatId + " in database");
+        return new ResponseDto(HttpStatus.BAD_REQUEST, "There is no chat with id = " + chatId + " in database");
     }
 
     @Override
-    public ResponseDTO addMember(int chatId, int studentId, Authentication authentication, ParticipantService service) {
+    public ResponseDto addMember(int chatId, int studentId, Authentication authentication, ParticipantService service) {
         Chat chat = getChatById(chatId);
         if (chat == null) {
-            return new ResponseDTO(HttpStatus.BAD_REQUEST, "There is no chat with id = " + chatId + " in database");
+            return new ResponseDto(HttpStatus.BAD_REQUEST, "There is no chat with id = " + chatId + " in database");
         }
         boolean hasRole = service.checkUserRoleInCourse(chat.getCourse(), authentication);
         if (!hasRole) {
-            return new ResponseDTO(HttpStatus.BAD_REQUEST, "User doesn't have the rights of a teacher or assistant");
+            return new ResponseDto(HttpStatus.BAD_REQUEST, "User doesn't have the rights of a teacher or assistant");
         }
         boolean tryAdd = addMember(studentId, chat);
         if (tryAdd) {
-            return new ResponseDTO(HttpStatus.OK, "Member added");
+            return new ResponseDto(HttpStatus.OK, "Member added");
         }
-        return new ResponseDTO(HttpStatus.BAD_REQUEST, "Can not add member");
+        return new ResponseDto(HttpStatus.BAD_REQUEST, "Can not add member");
     }
 
     @Override
-    public ResponseDTO addMessage(int chatId, MessageDto message, Authentication authentication, ParticipantService service) {
+    public ResponseDto addMessage(int chatId, MessageDto message, Authentication authentication, ParticipantService service) {
         Chat chat = getChatById(chatId);
         if (chat == null) {
-            return new ResponseDTO(HttpStatus.BAD_REQUEST, "There is no chat with id = " + chatId + " in database");
+            return new ResponseDto(HttpStatus.BAD_REQUEST, "There is no chat with id = " + chatId + " in database");
         }
         Participant sender = service.findByMail(authentication.getName());
         boolean tryAdd = addMessage(message, chat, sender);
         if (findParticipant(chat, sender) && tryAdd) {
-            return new ResponseDTO(HttpStatus.OK, "Message sent");
+            return new ResponseDto(HttpStatus.OK, "Message sent");
         }
-        return new ResponseDTO(HttpStatus.BAD_REQUEST, "Can not send message");
+        return new ResponseDto(HttpStatus.BAD_REQUEST, "Can not send message");
     }
 
     @Override
