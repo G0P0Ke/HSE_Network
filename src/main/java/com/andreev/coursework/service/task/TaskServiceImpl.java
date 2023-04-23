@@ -3,11 +3,15 @@ package com.andreev.coursework.service.task;
 import com.andreev.coursework.dao.AnswerRepository;
 import com.andreev.coursework.dao.ParticipantRepository;
 import com.andreev.coursework.dao.TaskRepository;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.entity.Answer;
 import com.andreev.coursework.entity.Course;
 import com.andreev.coursework.entity.Participant;
 import com.andreev.coursework.entity.Task;
 import com.andreev.coursework.service.course.CourseService;
+import com.andreev.coursework.service.participant.ParticipantService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +33,7 @@ public class TaskServiceImpl implements TaskService {
     private final AnswerRepository answerRepository;
 
     public TaskServiceImpl(TaskRepository taskRepository, ParticipantRepository participantRepository,
-        CourseService courseService, AnswerRepository answerRepository) {
+                           CourseService courseService, AnswerRepository answerRepository) {
         this.taskRepository = taskRepository;
         this.participantRepository = participantRepository;
         this.courseService = courseService;
@@ -98,5 +102,20 @@ public class TaskServiceImpl implements TaskService {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public ResponseDto addTaskToStudent(int taskId, Authentication authentication,
+                                        ParticipantService participantService) {
+        Task task = showTaskById(taskId);
+        if (task == null) {
+            return new ResponseDto(HttpStatus.BAD_REQUEST, "There is no task with ID = " + taskId + " in database");
+        }
+        Participant student = participantService.findByMail(authentication.getName());
+        boolean tryAdd = participantService.addTaskToStudent(student, task);
+        if (tryAdd) {
+            return new ResponseDto(HttpStatus.OK, "Task added to student with ID = " + student.getId());
+        }
+        return new ResponseDto(HttpStatus.OK, "Can not add task to student with ID = " + student.getId());
     }
 }
