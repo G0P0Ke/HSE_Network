@@ -15,18 +15,13 @@ import com.andreev.coursework.exception.paricipant.ParticipantRegistrationExcept
 import com.andreev.coursework.response.ChatResponseDto;
 import com.andreev.coursework.response.CourseResponseDto;
 import com.andreev.coursework.response.TaskAddResponseDto;
-import com.andreev.coursework.response.TaskResponseDto;
 import com.andreev.coursework.service.chat.ChatService;
 import com.andreev.coursework.service.participant.ParticipantService;
 import com.andreev.coursework.service.task.TaskService;
 import com.andreev.coursework.service.userCourseAgent.UserCourseAgentService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

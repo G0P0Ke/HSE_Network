@@ -5,8 +5,6 @@ import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.dto.StudentAddDto;
 import com.andreev.coursework.entity.*;
-import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
-import com.andreev.coursework.exception.paricipant.NoSuchObjectException;
 import com.andreev.coursework.response.ChatResponseDto;
 import com.andreev.coursework.response.CourseResponseDto;
 import com.andreev.coursework.response.TaskAddResponseDto;
