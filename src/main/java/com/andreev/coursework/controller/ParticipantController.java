@@ -2,9 +2,8 @@ package com.andreev.coursework.controller;
 
 import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.entity.*;
-import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
-import com.andreev.coursework.exception.paricipant.NoSuchObjectException;
 import com.andreev.coursework.response.SimpleCourseResponseDto;
 import com.andreev.coursework.service.course.CourseService;
 import com.andreev.coursework.service.participant.ParticipantService;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +25,7 @@ public class ParticipantController {
     private final CourseService courseService;
 
     public ParticipantController(ParticipantService participantService, TaskService taskService,
-        CourseService courseService) {
+                                 CourseService courseService) {
         this.participantService = participantService;
         this.taskService = taskService;
         this.courseService = courseService;
@@ -47,104 +45,62 @@ public class ParticipantController {
 
     @PutMapping("/{id}/profile/update")
     @Operation(
-        summary = "Обновление профиля пользователя",
-        description = "id - id пользователя, поля могут быть пустыми"
+            summary = "Обновление профиля пользователя",
+            description = "id - id пользователя, поля могут быть пустыми"
     )
     public ResponseEntity<String> updateUserProfile(
-        @PathVariable int id,
-        @RequestBody ProfileDto profileDto
+            @PathVariable int id,
+            @RequestBody ProfileDto profileDto
     ) {
-        Participant participant = participantService.getUser(id);
-        if (participant == null) {
-            throw new NoSuchObjectException("There is no participant with ID = " + id
-                + " in Database");
-        }
-        participantService.updateProfileUser(participant, profileDto);
-        return ResponseEntity.ok("Profile updated");
+        ResponseDto response = participantService.updateUserProfile(id, profileDto);
+        return ResponseEntity.status(response.status()).body(response.message());
     }
 
     @GetMapping("/getCourse")
     @Operation(summary = "Получить список всех курсов пользователя")
     public List<SimpleCourseResponseDto> getAllCourse(Authentication authentication) {
-        Participant participant = participantService.findByMail(authentication.getName());
-        List<Course> courseList = participantService.getAllCourses(participant);
-
-        List<SimpleCourseResponseDto> answer = new ArrayList<>();
-        for (Course course : courseList) {
-            String name = courseService.getCreatorName(course);
-            answer.add(new SimpleCourseResponseDto(course.getId(), course.getName(), course.getDescription(), name));
-        }
-
-        return answer;
+        return participantService.getAllCourses(authentication, courseService);
     }
 
     @GetMapping("/{id}/task")
     @Operation(
-        summary = "Получение всех заданий пользователя",
-        description = "id - id пользователя"
+            summary = "Получение всех заданий пользователя",
+            description = "id - id пользователя"
     )
     public Set<UserTaskAgent> getAllTasksByParticipantId(@PathVariable int id) {
-        Participant participant = participantService.getUser(id);
-        if (participant == null) {
-            throw new NoSuchObjectException("There is no participant with ID = " + id
-                + " in Database");
-        }
-        return participant.getTaskList();
+        return participantService.getAllTasksByParticipantId(id);
     }
 
     @GetMapping("/{id}/chat")
     @Operation(
-        summary = "Получение всех чатов пользователя",
-        description = "id - id пользователя"
+            summary = "Получение всех чатов пользователя",
+            description = "id - id пользователя"
     )
     public Set<Chat> getAllChatsByParticipantId(@PathVariable int id) {
-        Participant participant = participantService.getUser(id);
-        if (participant == null) {
-            throw new NoSuchObjectException("There is no participant with ID = " + id
-                + " in Database");
-        }
-        return participant.getChatList();
+        return participantService.getAllChatsByParticipantId(id);
     }
 
     @PostMapping("/{id}/addCourse")
     @Operation(
-        summary = "добавить курс",
-        description = "добавлять курс могут только учителя"
+            summary = "добавить курс",
+            description = "добавлять курс могут только учителя"
     )
     public ResponseEntity<String> addCourse(
-        @PathVariable int id,
-        @RequestBody CourseDto courseDto
+            @PathVariable int id,
+            @RequestBody CourseDto courseDto
     ) {
-        Participant participant = participantService.getUser(id);
-        if (participant == null) {
-            throw new NoSuchObjectException("There is no participant with ID = " + id
-                + " in Database");
-        } else if (!participant.isTeacher()) {
-            throw new NoParticipantRightsException("User with ID = " + id
-                + " is not a teacher");
-        }
-        participantService.addCourse(participant, courseDto);
-        return ResponseEntity.ok("Course added");
+        ResponseDto response = participantService.addCourse(id, courseDto);
+        return ResponseEntity.ok(response.message());
     }
 
     @PutMapping("/{userId}/{taskId}/grade")
     @Operation(summary = "выставление студенту оценки за задание")
     public ResponseEntity<String> gradeTask(
-        @PathVariable int userId,
-        @PathVariable int taskId,
-        @RequestBody int grade
+            @PathVariable int userId,
+            @PathVariable int taskId,
+            @RequestBody int grade
     ) {
-        Participant participant = participantService.getUser(userId);
-        if (participant == null) {
-            throw new NoSuchObjectException("There is no participant with ID = " + userId
-                + " in Database");
-        }
-        Task task = taskService.showTaskById(taskId);
-        if (task == null) {
-            throw new NoSuchObjectException("There is no task with ID = " + taskId
-                + " in Database");
-        }
-        participantService.gradeParticipantByTask(participant, task, grade);
-        return ResponseEntity.ok("Student with ID = " + userId + " graded by " + grade);
+        ResponseDto response = participantService.gradeTask(userId, taskId, grade, taskService, participantService);
+        return ResponseEntity.ok(response.message());
     }
 }
