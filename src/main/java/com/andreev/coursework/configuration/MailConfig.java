@@ -10,22 +10,22 @@ import java.util.Properties;
 
 @Configuration
 public class MailConfig {
-    @Value("${mail/host}")
+    @Value("${spring.mail.host}")
     private String host;
 
-    @Value("${mail/username}")
+    @Value("${spring.mail.username}")
     private String username;
 
-    @Value("${mail/password}")
+    @Value("${spring.mail.password}")
     private String password;
 
-    @Value("${mail/port}")
+    @Value("${spring.mail.port}")
     private int port;
 
-    @Value("${mail/protocol}")
+    @Value("${spring.mail.protocol}")
     private String protocol;
 
-    @Value("${mail/debug}")
+    @Value("${mail.debug}")
     private String debug;
 
     @Bean
