@@ -2,9 +2,9 @@ package com.andreev.coursework.controller;
 
 import com.andreev.coursework.dto.ChatDto;
 import com.andreev.coursework.dto.CourseDto;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.dto.StudentAddDto;
 import com.andreev.coursework.entity.*;
-import com.andreev.coursework.exception.course.NoSuchCourseException;
 import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
 import com.andreev.coursework.exception.paricipant.NoSuchObjectException;
 import com.andreev.coursework.response.ChatResponseDto;
@@ -35,11 +35,11 @@ public class CourseController {
     private final ChatService chatService;
 
     public CourseController(
-        CourseService courseService,
-        ParticipantService participantService,
-        UserCourseAgentService userCourseAgentService,
-        TaskService taskService,
-        ChatService chatService) {
+            CourseService courseService,
+            ParticipantService participantService,
+            UserCourseAgentService userCourseAgentService,
+            TaskService taskService,
+            ChatService chatService) {
         this.courseService = courseService;
         this.participantService = participantService;
         this.userCourseAgentService = userCourseAgentService;
@@ -49,200 +49,138 @@ public class CourseController {
 
     @GetMapping("/{courseId}")
     @Operation(
-        summary = "Получение информации о курсе по его Id",
-        description = "Если пользователь не член курса, то доступа не будет"
+            summary = "Получение информации о курсе по его Id",
+            description = "Если пользователь не член курса, то доступа не будет"
     )
     public ResponseEntity<CourseResponseDto> getCourse(
-        @PathVariable int courseId,
-        Authentication authentication
+            @PathVariable int courseId,
+            Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return ResponseEntity.ok(
-            new CourseResponseDto(course.getName(), course.getDescription(), course.getCourseParticipants())
+                new CourseResponseDto(course.getName(), course.getDescription(), course.getCourseParticipants())
         );
     }
 
     @PostMapping("/{courseId}/addStudent")
     @Operation(
-        summary = "Добавление студента к курсу",
-        description = "Если запрос к ручке делает не учитель, создавший курс, то доступа не будет"
+            summary = "Добавление студента к курсу",
+            description = "Если запрос к ручке делает не учитель, создавший курс, то доступа не будет"
     )
     public ResponseEntity<CourseResponseDto> addStudentToCourse(
-        @PathVariable int courseId,
-        Authentication authentication,
-        @RequestBody StudentAddDto studentAddDto
+            @PathVariable int courseId,
+            Authentication authentication,
+            @RequestBody StudentAddDto studentAddDto
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant teacher = participantService.findByMail(authentication.getName());
-        if (!teacher.isTeacher()) {
-            throw new NoParticipantRightsException("User with ID = " + teacher.getId()
-                + " is not a teacher");
-        }
-        Participant student = participantService.getUser(studentAddDto.getStudentId());
-        if (student == null) {
-            throw new NoSuchObjectException("There isn't student with id " + studentAddDto.getStudentId()
-                + " in Database");
-        }
-        courseService.addStudent(course, student, studentAddDto.getRoleName());
-        return ResponseEntity.ok(
-            new CourseResponseDto(course.getName(), course.getDescription(), course.getCourseParticipants())
-        );
+        CourseResponseDto response = courseService.addStudentForCourse(courseId, studentAddDto, authentication,
+                participantService, userCourseAgentService);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{courseId}/participant")
     @Operation(
-        summary = "Получение всего списка пользователей курса",
-        description = "если запрос делает не член курса, то доступа не будет"
+            summary = "Получение всего списка пользователей курса",
+            description = "если запрос делает не член курса, то доступа не будет"
     )
     public Set<Participant> getCourseParticipant(
-        @PathVariable int courseId,
-        Authentication authentication
+            @PathVariable int courseId,
+            Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return course.getCourseParticipants();
     }
 
     @PostMapping("/{courseId}/addTask")
     @Operation(
-        summary = "Добавление задания к курсу",
-        description = "Может делать только учитель"
+            summary = "Добавление задания к курсу",
+            description = "Может делать только учитель"
     )
     public ResponseEntity<TaskAddResponseDto> addTaskToCourse(
-        @PathVariable int courseId,
-        @RequestParam("description") String description,
-        @RequestParam("date_finish") String date,
-        @RequestParam("file") MultipartFile file,
-        Authentication authentication
+            @PathVariable int courseId,
+            @RequestParam("description") String description,
+            @RequestParam("date_finish") String date,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant teacher = participantService.findByMail(authentication.getName());
-        if (!teacher.isTeacher()) {
-            throw new NoParticipantRightsException("User with ID = " + teacher.getId()
-                + " is not a teacher");
-        }
-        Task task = taskService.createTask(description, date, file, teacher.getId(), course);
-        TaskAddResponseDto taskAddResponseDto = new TaskAddResponseDto();
-        taskAddResponseDto.setCourse(task.getCourse());
-        taskAddResponseDto.setCreator(task.getCreator());
-        taskAddResponseDto.setDescription(task.getDescription());
-        taskAddResponseDto.setDateFinish(task.getDateFinish());
+        TaskAddResponseDto taskAddResponseDto = courseService.addTaskToCourse(courseId, description, date, file,
+                authentication, participantService, userCourseAgentService, taskService);
         return ResponseEntity.ok(taskAddResponseDto);
     }
 
     @GetMapping("/{courseId}/task")
     @Operation(
-        summary = "Получить все задания в курсе",
-        description = "courseId - id курса, подставляемый в url"
+            summary = "Получить все задания в курсе",
+            description = "courseId - id курса, подставляемый в url"
     )
     public List<Task> getAllTask(@PathVariable int courseId, Authentication authentication) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return course.getTaskList();
     }
 
     @PostMapping("/{courseId}/download/{taskId}")
     @Operation(
-        summary = "Скачать задание по courseId & taskId",
-        description = "Скачать могут только члены курса"
+            summary = "Скачать задание по courseId & taskId",
+            description = "Скачать могут только члены курса"
     )
     public void downloadTask(
-        @PathVariable int courseId,
-        @PathVariable int taskId,
-        Authentication authentication,
-        @RequestBody String path
+            @PathVariable int courseId,
+            @PathVariable int taskId,
+            Authentication authentication,
+            @RequestBody String path
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         taskService.downloadTaskById(taskId, path);
     }
 
     @PostMapping("/{courseId}/addChat")
     @Operation(summary = "Создание чата в курсе")
     public ResponseEntity<ChatResponseDto> addChat(
-        @PathVariable int courseId,
-        Authentication authentication,
-        @RequestBody ChatDto chatDto
+            @PathVariable int courseId,
+            Authentication authentication,
+            @RequestBody ChatDto chatDto
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        if (!checkUserRoleInCourse(course, authentication)) {
-            throw new NoParticipantRightsException("This user does not have the role of teacher and assistant");
-        }
-        Participant creator = participantService.findByMail(authentication.getName());
-        Chat chat = courseService.addChat(course, chatDto, creator);
-        Chat infoChat = chatService.getChatByCourseAndDescription(chat.getDescription(), course);
-        return ResponseEntity.ok(new ChatResponseDto(infoChat.getId(), infoChat.getDescription(), infoChat.getCreator().getMail()));
+        ChatResponseDto chatResponseDto = courseService.addChat(courseId, chatDto, authentication,
+                participantService, userCourseAgentService, chatService);
+        return ResponseEntity.ok(chatResponseDto);
     }
 
     @GetMapping("/{courseId}/chat")
     @Operation(summary = "Получение всех чатов курса по его Id")
     public List<Chat> getChat(@PathVariable int courseId, Authentication authentication) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return courseService.getChat(course);
     }
 
     @PutMapping("/{courseId}/ ")
     @Operation(summary = "Обновление инфомрации о курсе")
     public ResponseEntity<CourseResponseDto> updateCourse(
-        @PathVariable int courseId,
-        @RequestBody CourseDto courseDto,
-        Authentication authentication
+            @PathVariable int courseId,
+            @RequestBody CourseDto courseDto,
+            Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant teacher = participantService.findByMail(authentication.getName());
-        if (!teacher.isTeacher()) {
-            throw new NoParticipantRightsException("User with ID = " + teacher.getId()
-                + " is not a teacher");
-        }
-        Course updatedCourse = courseService.updateCourseInfo(course, courseDto);
-        CourseResponseDto courseResponseDto = new CourseResponseDto();
-        courseResponseDto.setDescription(updatedCourse.getDescription());
-        courseResponseDto.setName(updatedCourse.getName());
+        CourseResponseDto courseResponseDto = courseService.updateCourse(courseId, courseDto, authentication,
+                participantService, userCourseAgentService);
         return ResponseEntity.ok(courseResponseDto);
     }
 
     @PostMapping("/{courseId}/{taskId}/addAnswer")
     @Operation(summary = "Добавление ответа на задание")
     public ResponseEntity<String> addTask(
-        @PathVariable int courseId,
-        @PathVariable int taskId,
-        @RequestParam("date_send") String date,
-        @RequestParam("file") MultipartFile solution,
-        Authentication authentication
+            @PathVariable int courseId,
+            @PathVariable int taskId,
+            @RequestParam("date_send") String date,
+            @RequestParam("file") MultipartFile solution,
+            Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant student = participantService.findByMail(authentication.getName());
-        Task task = taskService.showTaskById(taskId);
-        if (task == null) {
-            throw new NoSuchObjectException("There is no task with ID = " + taskId
-                + " in Database");
-        }
-        Answer answer = taskService.addAnswer(date, solution, task, student);
-        if (answer == null) {
-            return ResponseEntity.badRequest().body("Can not add answer");
-        }
-        return ResponseEntity.ok("Answer added");
+        ResponseDto response = courseService.addTask(courseId, taskId, date, solution, authentication,
+                participantService, taskService, userCourseAgentService);
+        return ResponseEntity.status(response.status()).body(response.message());
     }
 
-    public boolean checkUserRoleInCourse(Course course, Authentication authentication) {
-        Participant participant = participantService.findByMail(authentication.getName());
-        UserCourseAgent userCourseAgent = userCourseAgentService.findUserCourseAgent(course, participant);
-        return switch (userCourseAgent.getRole().getName()) {
-            case ROLE_ASSISTANT -> true;
-            case ROLE_TEACHER -> true;
-            default -> false;
-        };
-    }
 
-    public Course checkCourseAndUserData(int courseId, Authentication authentication) {
-        Course course = courseService.findById(courseId);
-        if (course == null) {
-            throw new NoSuchCourseException("There is no course with ID = " + courseId
-                + " in Database");
-        }
-        Participant participant = participantService.findByMail(authentication.getName());
-        UserCourseAgent userCourseAgent = userCourseAgentService.findUserCourseAgent(course, participant);
-        if (userCourseAgent == null) {
-            throw new NoSuchObjectException("There isn't participant with id " + participant.getId()
-                + " in course with id " + courseId);
-        }
-        return course;
-    }
 }
