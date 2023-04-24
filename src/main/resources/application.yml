@@ -12,6 +12,10 @@ spring:
       uri: https://localhost:8200
       connection-timeout: 5000
       read-timeout: 15000
+      authentication: approle
+      app-role:
+        role-id: ${SPRING_ROLE_ID}
+        secret-id: ${SPRING_SECRET_ID}
   jpa:
     generate-ddl: 'false'
     show-sql: 'false'
