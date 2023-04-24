@@ -9,7 +9,12 @@ import com.andreev.coursework.dto.ChatDto;
 import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.dto.StudentAddDto;
-import com.andreev.coursework.entity.*;
+import com.andreev.coursework.entity.Answer;
+import com.andreev.coursework.entity.Chat;
+import com.andreev.coursework.entity.Course;
+import com.andreev.coursework.entity.Participant;
+import com.andreev.coursework.entity.Task;
+import com.andreev.coursework.entity.UserCourseAgent;
 import com.andreev.coursework.entity.security.Role;
 import com.andreev.coursework.entity.security.RoleName;
 import com.andreev.coursework.exception.course.NoSuchCourseException;
@@ -71,8 +76,7 @@ public class CourseServiceImpl implements CourseService {
                 break;
             }
         }
-        String name = String.format("%s %s %s", teacher.getSecondName(), teacher.getFirstName(), teacher.getPatronymic());
-        return name;
+        return String.format("%s %s %s", teacher.getSecondName(), teacher.getFirstName(), teacher.getPatronymic());
     }
 
     @Override
@@ -230,32 +234,25 @@ public class CourseServiceImpl implements CourseService {
         return courseResponseDto;
     }
 
-    private Role validateAndGetRegisteredRoles(String roleString) {
-
-        RoleName registeredRoleName = extractRoleNameFromRoleString(roleString);
-        Role registeredRole = roleRepository.findByName(registeredRoleName);
-        return registeredRole;
-    }
-
     private RoleName extractRoleNameFromRoleString(String roleString) {
-        switch (roleString.trim().toLowerCase()) {
-            case "student":
-                return RoleName.ROLE_STUDENT;
-            case "teacher":
-                return RoleName.ROLE_TEACHER;
-            case "assistant":
-                return RoleName.ROLE_ASSISTANT;
-            default:
-                throw new ParticipantRegistrationException("Invalid role was given for registration");
-        }
+        return switch (roleString.trim().toLowerCase()) {
+            case "student" -> RoleName.ROLE_STUDENT;
+            case "teacher" -> RoleName.ROLE_TEACHER;
+            case "assistant" -> RoleName.ROLE_ASSISTANT;
+            default -> throw new ParticipantRegistrationException("Invalid role was given for registration");
+        };
+    }
 
     private Role validateAndGetRegisteredRoles(RoleName registeredRoleName) {
         return roleRepository.findByName(registeredRoleName);
     }
 
-    private boolean checkUserRoleInCourse(Course course, Authentication authentication,
-                                          ParticipantService participantService,
-                                          UserCourseAgentService userCourseAgentService) {
+    private boolean checkUserRoleInCourse(
+        Course course,
+        Authentication authentication,
+        ParticipantService participantService,
+        UserCourseAgentService userCourseAgentService
+    ) {
         Participant participant = participantService.findByMail(authentication.getName());
         UserCourseAgent userCourseAgent = userCourseAgentService.findUserCourseAgent(course, participant);
         return switch (userCourseAgent.getRole().getName()) {
@@ -264,4 +261,5 @@ public class CourseServiceImpl implements CourseService {
             default -> false;
         };
     }
+
 }

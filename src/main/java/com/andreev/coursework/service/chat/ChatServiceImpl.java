@@ -65,8 +65,8 @@ public class ChatServiceImpl implements ChatService {
             return new ResponseDto(HttpStatus.BAD_REQUEST, "There is no chat with id = " + chatId + " in database");
         }
         Participant sender = service.findByMail(authentication.getName());
-        boolean tryAdd = addMessage(message, chat, sender);
-        if (findParticipant(chat, sender) && tryAdd) {
+        addMessage(message, chat, sender);
+        if (findParticipant(chat, sender)) {
             return new ResponseDto(HttpStatus.OK, "Message sent");
         }
         return new ResponseDto(HttpStatus.BAD_REQUEST, "Can not send message");
