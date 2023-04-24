@@ -26,7 +26,7 @@ public interface ChatService {
 
     boolean addMember(int userId, Chat chat);
 
-    boolean addMessage(MessageDto messageDto, Chat chat, Participant participant);
+    void addMessage(MessageDto messageDto, Chat chat, Participant participant);
 
     boolean findParticipant(Chat chat, Participant participant);
 

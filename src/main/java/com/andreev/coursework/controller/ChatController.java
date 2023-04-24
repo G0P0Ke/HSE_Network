@@ -9,8 +9,15 @@ import com.andreev.coursework.service.participant.ParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -36,7 +43,7 @@ public class ChatController {
     @Operation(summary = "добавить участника в чат")
     public ResponseEntity<String> addMember(
         @PathVariable int chatId,
-        @RequestBody StudentAddDto studentAddDto,
+        @Valid @RequestBody StudentAddDto studentAddDto,
         Authentication authentication
     ) {
         ResponseDto response = chatService.addMember(chatId, studentAddDto.getStudentId(), authentication, participantService);
@@ -46,9 +53,9 @@ public class ChatController {
     @PostMapping("/{chatId}/addMessage")
     @Operation(summary = "отправить сообщение в чат")
     public ResponseEntity<String> addMessage(
-        @PathVariable int chatId,
-        @RequestBody MessageDto messageDto,
-        Authentication authentication
+            @PathVariable int chatId,
+            @Valid @RequestBody MessageDto messageDto,
+            Authentication authentication
     ) {
         ResponseDto response = chatService.addMessage(chatId, messageDto, authentication, participantService);
         return ResponseEntity.status(response.status()).body(response.message());

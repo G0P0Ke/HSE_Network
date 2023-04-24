@@ -15,6 +15,7 @@ import com.andreev.coursework.service.userCourseAgent.UserCourseAgentService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.util.List;
 
 public interface CourseService {
@@ -23,7 +24,7 @@ public interface CourseService {
 
     String getCreatorName(Course course);
 
-    void addStudent(Course course, Participant student, String roleName);
+    void addStudent(Course course, Participant student, RoleName roleName);
 
     ResponseDto getCourse(int courseId, Authentication authentication,
                           ParticipantService participantService,

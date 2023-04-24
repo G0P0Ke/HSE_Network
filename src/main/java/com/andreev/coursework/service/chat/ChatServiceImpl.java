@@ -15,11 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -109,21 +105,13 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public boolean addMessage(MessageDto messageDto, Chat chat, Participant participant) {
-        DateFormat date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        try {
-            Date dateSend = date.parse(messageDto.getDateSend());
-            Message message = new Message();
-            message.setChat(chat);
-            message.setDateSend(dateSend);
-            message.setContent(messageDto.getContent());
-            message.setSender(participant);
-            messageRepository.save(message);
-            return true;
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return false;
+    public void addMessage(MessageDto messageDto, Chat chat, Participant participant) {
+        Message message = new Message();
+        message.setChat(chat);
+        message.setDateSend(messageDto.getDateSend());
+        message.setContent(messageDto.getContent());
+        message.setSender(participant);
+        messageRepository.save(message);
     }
 
     @Override

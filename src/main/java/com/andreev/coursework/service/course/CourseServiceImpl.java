@@ -1,6 +1,10 @@
 package com.andreev.coursework.service.course;
 
-import com.andreev.coursework.dao.*;
+import com.andreev.coursework.dao.ChatRepository;
+import com.andreev.coursework.dao.CourseRepository;
+import com.andreev.coursework.dao.ParticipantRepository;
+import com.andreev.coursework.dao.RoleRepository;
+import com.andreev.coursework.dao.UserCourseAgentRepository;
 import com.andreev.coursework.dto.ChatDto;
 import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ResponseDto;
@@ -72,7 +76,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void addStudent(Course course, Participant student, String roleName) {
+    public void addStudent(Course course, Participant student, RoleName roleName) {
         UserCourseAgent userCourseAgent = course.addParticipant(student, validateAndGetRegisteredRoles(roleName));
         userCourseAgentRepository.save(userCourseAgent);
     }
@@ -105,12 +109,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course updateCourseInfo(Course course, CourseDto courseDto) {
-        if (!courseDto.getName().isEmpty()) {
-            course.setName(courseDto.getName());
-        }
-        if (!courseDto.getDescription().isEmpty()) {
-            course.setDescription(courseDto.getDescription());
-        }
+        course.setName(courseDto.getName());
+        course.setDescription(courseDto.getDescription());
         courseRepository.save(course);
         return course;
     }
@@ -248,6 +248,9 @@ public class CourseServiceImpl implements CourseService {
             default:
                 throw new ParticipantRegistrationException("Invalid role was given for registration");
         }
+
+    private Role validateAndGetRegisteredRoles(RoleName registeredRoleName) {
+        return roleRepository.findByName(registeredRoleName);
     }
 
     private boolean checkUserRoleInCourse(Course course, Authentication authentication,

@@ -16,9 +16,17 @@ import com.andreev.coursework.service.userCourseAgent.UserCourseAgentService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -69,7 +77,7 @@ public class CourseController {
     public ResponseEntity<CourseResponseDto> addStudentToCourse(
             @PathVariable int courseId,
             Authentication authentication,
-            @RequestBody StudentAddDto studentAddDto
+            @Valid @RequestBody StudentAddDto studentAddDto
     ) {
         CourseResponseDto response = courseService.addStudentForCourse(courseId, studentAddDto, authentication,
                 participantService, userCourseAgentService);
@@ -139,7 +147,7 @@ public class CourseController {
     public ResponseEntity<ChatResponseDto> addChat(
             @PathVariable int courseId,
             Authentication authentication,
-            @RequestBody ChatDto chatDto
+            @Valid @RequestBody ChatDto chatDto
     ) {
         ChatResponseDto chatResponseDto = courseService.addChat(courseId, chatDto, authentication,
                 participantService, userCourseAgentService, chatService);
@@ -158,7 +166,7 @@ public class CourseController {
     @Operation(summary = "Обновление инфомрации о курсе")
     public ResponseEntity<CourseResponseDto> updateCourse(
             @PathVariable int courseId,
-            @RequestBody CourseDto courseDto,
+            @Valid @RequestBody CourseDto courseDto,
             Authentication authentication
     ) {
         CourseResponseDto courseResponseDto = courseService.updateCourse(courseId, courseDto, authentication,
@@ -179,6 +187,5 @@ public class CourseController {
                 participantService, taskService, userCourseAgentService);
         return ResponseEntity.status(response.status()).body(response.message());
     }
-
 
 }
