@@ -1,10 +1,9 @@
 package com.andreev.coursework.controller;
 
 import com.andreev.coursework.dto.MessageDto;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.dto.StudentAddDto;
-import com.andreev.coursework.entity.Chat;
 import com.andreev.coursework.entity.Message;
-import com.andreev.coursework.entity.Participant;
 import com.andreev.coursework.service.chat.ChatService;
 import com.andreev.coursework.service.participant.ParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,31 +35,19 @@ public class ChatController {
     @DeleteMapping("/{chatId}")
     @Operation(summary = "Удаление чата по его id")
     public ResponseEntity<String> deleteChat(@PathVariable int chatId) {
-        if (chatService.deleteChatById(chatId)) {
-            return ResponseEntity.ok("Chat deleted");
-        }
-        return ResponseEntity.badRequest().body("There is no chat with id = " + chatId + " in database");
+        ResponseDto response = chatService.deleteChat(chatId);
+        return ResponseEntity.status(response.status()).body(response.message());
     }
 
     @PostMapping("/{chatId}/addMember")
     @Operation(summary = "добавить участника в чат")
     public ResponseEntity<String> addMember(
-            @PathVariable int chatId,
-            @Valid @RequestBody StudentAddDto studentAddDto,
-            Authentication authentication) {
-        Chat chat = chatService.getChatById(chatId);
-        if (chat == null) {
-            return ResponseEntity.badRequest().body("There is no chat with id = " + chatId + " in database");
-        }
-        boolean hasRole = participantService.checkUserRoleInCourse(chat.getCourse(), authentication);
-        if (!hasRole) {
-            return ResponseEntity.badRequest().body("User doesn't have the rights of a teacher or assistant");
-        }
-        boolean tryAdd = chatService.addMember(studentAddDto.getStudentId(), chat);
-        if (tryAdd) {
-            return ResponseEntity.ok("Member added");
-        }
-        return ResponseEntity.badRequest().body("Can not add member");
+        @PathVariable int chatId,
+        @Valid @RequestBody StudentAddDto studentAddDto,
+        Authentication authentication
+    ) {
+        ResponseDto response = chatService.addMember(chatId, studentAddDto.getStudentId(), authentication, participantService);
+        return ResponseEntity.status(response.status()).body(response.message());
     }
 
     @PostMapping("/{chatId}/addMessage")
@@ -70,16 +57,8 @@ public class ChatController {
             @Valid @RequestBody MessageDto messageDto,
             Authentication authentication
     ) {
-        Chat chat = chatService.getChatById(chatId);
-        if (chat == null) {
-            return ResponseEntity.badRequest().body("There is no chat with id = " + chatId + " in database");
-        }
-        Participant sender = participantService.findByMail(authentication.getName());
-        chatService.addMessage(messageDto, chat, sender);
-        if (checkMember(chat, sender)) {
-            return ResponseEntity.ok("Message sent");
-        }
-        return ResponseEntity.badRequest().body("Can not send message");
+        ResponseDto response = chatService.addMessage(chatId, messageDto, authentication, participantService);
+        return ResponseEntity.status(response.status()).body(response.message());
     }
 
     @GetMapping("/{chatId}/message")
@@ -88,7 +67,4 @@ public class ChatController {
         return chatService.getAllMessage(chatId);
     }
 
-    private boolean checkMember(Chat chat, Participant sender) {
-        return chatService.findParticipant(chat, sender);
-    }
 }

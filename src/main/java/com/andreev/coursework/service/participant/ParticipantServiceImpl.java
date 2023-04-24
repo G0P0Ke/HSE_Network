@@ -7,13 +7,16 @@ import com.andreev.coursework.dao.UserCourseAgentRepository;
 import com.andreev.coursework.dao.UserTaskAgentRepository;
 import com.andreev.coursework.dto.CourseDto;
 import com.andreev.coursework.dto.ProfileDto;
-import com.andreev.coursework.entity.Course;
-import com.andreev.coursework.entity.Participant;
-import com.andreev.coursework.entity.Task;
-import com.andreev.coursework.entity.UserCourseAgent;
-import com.andreev.coursework.entity.UserTaskAgent;
+import com.andreev.coursework.dto.ResponseDto;
+import com.andreev.coursework.entity.*;
 import com.andreev.coursework.entity.security.RoleName;
+import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
+import com.andreev.coursework.exception.paricipant.NoSuchObjectException;
+import com.andreev.coursework.response.SimpleCourseResponseDto;
 import com.andreev.coursework.service.MailSender;
+import com.andreev.coursework.service.course.CourseService;
+import com.andreev.coursework.service.task.TaskService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -170,5 +173,81 @@ public class ParticipantServiceImpl implements ParticipantService {
             case ROLE_TEACHER -> true;
             default -> false;
         };
+    }
+
+    @Override
+    public ResponseDto updateUserProfile(int id, ProfileDto profileDto) {
+        Participant participant = getUser(id);
+        if (participant == null) {
+            throw new NoSuchObjectException("There is no participant with ID = " + id
+                    + " in Database");
+        }
+        updateProfileUser(participant, profileDto);
+        return new ResponseDto(HttpStatus.OK, "Profile updated");
+    }
+
+    @Override
+    public List<SimpleCourseResponseDto> getAllCourses(Authentication authentication, CourseService courseService) {
+        Participant participant = findByMail(authentication.getName());
+        List<Course> courseList = getAllCourses(participant);
+
+        List<SimpleCourseResponseDto> answer = new ArrayList<>();
+        for (Course course : courseList) {
+            String name = courseService.getCreatorName(course);
+            answer.add(new SimpleCourseResponseDto(course.getId(), course.getName(), course.getDescription(), name));
+        }
+
+        return answer;
+    }
+
+    @Override
+    public Set<UserTaskAgent> getAllTasksByParticipantId(int id) {
+        Participant participant = getUser(id);
+        if (participant == null) {
+            throw new NoSuchObjectException("There is no participant with ID = " + id
+                    + " in Database");
+        }
+        return participant.getTaskList();
+    }
+
+    @Override
+    public Set<Chat> getAllChatsByParticipantId(int id) {
+        Participant participant = getUser(id);
+        if (participant == null) {
+            throw new NoSuchObjectException("There is no participant with ID = " + id
+                    + " in Database");
+        }
+        return participant.getChatList();
+    }
+
+    @Override
+    public ResponseDto addCourse(int id, CourseDto courseDto) {
+        Participant participant = getUser(id);
+        if (participant == null) {
+            throw new NoSuchObjectException("There is no participant with ID = " + id
+                    + " in Database");
+        } else if (!participant.isTeacher()) {
+            throw new NoParticipantRightsException("User with ID = " + id
+                    + " is not a teacher");
+        }
+        addCourse(participant, courseDto);
+        return new ResponseDto(HttpStatus.OK, "Course added");
+    }
+
+    @Override
+    public ResponseDto gradeTask(int userId, int taskId, int grade, TaskService taskService,
+                                 ParticipantService participantService) {
+        Participant participant = getUser(userId);
+        if (participant == null) {
+            throw new NoSuchObjectException("There is no participant with ID = " + userId
+                    + " in Database");
+        }
+        Task task = taskService.showTaskById(taskId);
+        if (task == null) {
+            throw new NoSuchObjectException("There is no task with ID = " + taskId
+                    + " in Database");
+        }
+        participantService.gradeParticipantByTask(participant, task, grade);
+        return new ResponseDto(HttpStatus.OK, "Student with ID = " + userId + " graded by " + grade);
     }
 }

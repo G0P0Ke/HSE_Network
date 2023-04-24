@@ -1,6 +1,6 @@
 package com.andreev.coursework.controller;
 
-import com.andreev.coursework.entity.Participant;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.entity.Task;
 import com.andreev.coursework.service.participant.ParticipantService;
 import com.andreev.coursework.service.task.TaskService;
@@ -33,15 +33,7 @@ public class TaskController {
         @PathVariable int taskId,
         Authentication authentication
     ) {
-        Task task = taskService.showTaskById(taskId);
-        if (task == null) {
-            return ResponseEntity.badRequest().body("There is no task with ID = " + taskId + " in database");
-        }
-        Participant student = participantService.findByMail(authentication.getName());
-        boolean tryAdd = participantService.addTaskToStudent(student, task);
-        if (tryAdd) {
-            return ResponseEntity.ok("Task added to student with ID = " + student.getId());
-        }
-        return ResponseEntity.badRequest().body("Can not add task to student with ID = " + student.getId());
+        ResponseDto response = taskService.addTaskToStudent(taskId, authentication, participantService);
+        return ResponseEntity.status(response.status()).body(response.message());
     }
 }

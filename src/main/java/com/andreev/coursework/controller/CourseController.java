@@ -2,16 +2,9 @@ package com.andreev.coursework.controller;
 
 import com.andreev.coursework.dto.ChatDto;
 import com.andreev.coursework.dto.CourseDto;
+import com.andreev.coursework.dto.ResponseDto;
 import com.andreev.coursework.dto.StudentAddDto;
-import com.andreev.coursework.entity.Answer;
-import com.andreev.coursework.entity.Chat;
-import com.andreev.coursework.entity.Course;
-import com.andreev.coursework.entity.Participant;
-import com.andreev.coursework.entity.Task;
-import com.andreev.coursework.entity.UserCourseAgent;
-import com.andreev.coursework.exception.course.NoSuchCourseException;
-import com.andreev.coursework.exception.paricipant.NoParticipantRightsException;
-import com.andreev.coursework.exception.paricipant.NoSuchObjectException;
+import com.andreev.coursework.entity.*;
 import com.andreev.coursework.response.ChatResponseDto;
 import com.andreev.coursework.response.CourseResponseDto;
 import com.andreev.coursework.response.TaskAddResponseDto;
@@ -69,7 +62,8 @@ public class CourseController {
             @PathVariable int courseId,
             Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return ResponseEntity.ok(
                 new CourseResponseDto(course.getName(), course.getDescription(), course.getCourseParticipants())
         );
@@ -85,21 +79,9 @@ public class CourseController {
             Authentication authentication,
             @Valid @RequestBody StudentAddDto studentAddDto
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant teacher = participantService.findByMail(authentication.getName());
-        if (!teacher.isTeacher()) {
-            throw new NoParticipantRightsException("User with ID = " + teacher.getId()
-                    + " is not a teacher");
-        }
-        Participant student = participantService.getUser(studentAddDto.getStudentId());
-        if (student == null) {
-            throw new NoSuchObjectException("There isn't student with id " + studentAddDto.getStudentId()
-                    + " in Database");
-        }
-        courseService.addStudent(course, student, studentAddDto.getRoleName());
-        return ResponseEntity.ok(
-                new CourseResponseDto(course.getName(), course.getDescription(), course.getCourseParticipants())
-        );
+        CourseResponseDto response = courseService.addStudentForCourse(courseId, studentAddDto, authentication,
+                participantService, userCourseAgentService);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{courseId}/participant")
@@ -111,7 +93,8 @@ public class CourseController {
             @PathVariable int courseId,
             Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return course.getCourseParticipants();
     }
 
@@ -127,18 +110,8 @@ public class CourseController {
             @RequestParam("file") MultipartFile file,
             Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant teacher = participantService.findByMail(authentication.getName());
-        if (!teacher.isTeacher()) {
-            throw new NoParticipantRightsException("User with ID = " + teacher.getId()
-                    + " is not a teacher");
-        }
-        Task task = taskService.createTask(description, date, file, teacher.getId(), course);
-        TaskAddResponseDto taskAddResponseDto = new TaskAddResponseDto();
-        taskAddResponseDto.setCourse(task.getCourse());
-        taskAddResponseDto.setCreator(task.getCreator());
-        taskAddResponseDto.setDescription(task.getDescription());
-        taskAddResponseDto.setDateFinish(task.getDateFinish());
+        TaskAddResponseDto taskAddResponseDto = courseService.addTaskToCourse(courseId, description, date, file,
+                authentication, participantService, userCourseAgentService, taskService);
         return ResponseEntity.ok(taskAddResponseDto);
     }
 
@@ -148,7 +121,8 @@ public class CourseController {
             description = "courseId - id курса, подставляемый в url"
     )
     public List<Task> getAllTask(@PathVariable int courseId, Authentication authentication) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return course.getTaskList();
     }
 
@@ -163,7 +137,8 @@ public class CourseController {
             Authentication authentication,
             @RequestBody String path
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         taskService.downloadTaskById(taskId, path);
     }
 
@@ -174,20 +149,16 @@ public class CourseController {
             Authentication authentication,
             @Valid @RequestBody ChatDto chatDto
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        if (!checkUserRoleInCourse(course, authentication)) {
-            throw new NoParticipantRightsException("This user does not have the role of teacher and assistant");
-        }
-        Participant creator = participantService.findByMail(authentication.getName());
-        Chat chat = courseService.addChat(course, chatDto, creator);
-        Chat infoChat = chatService.getChatByCourseAndDescription(chat.getDescription(), course);
-        return ResponseEntity.ok(new ChatResponseDto(infoChat.getId(), infoChat.getDescription(), infoChat.getCreator().getMail()));
+        ChatResponseDto chatResponseDto = courseService.addChat(courseId, chatDto, authentication,
+                participantService, userCourseAgentService, chatService);
+        return ResponseEntity.ok(chatResponseDto);
     }
 
     @GetMapping("/{courseId}/chat")
     @Operation(summary = "Получение всех чатов курса по его Id")
     public List<Chat> getChat(@PathVariable int courseId, Authentication authentication) {
-        Course course = checkCourseAndUserData(courseId, authentication);
+        Course course = courseService.checkCourseAndUserData(courseId, authentication,
+                participantService, userCourseAgentService);
         return courseService.getChat(course);
     }
 
@@ -198,16 +169,8 @@ public class CourseController {
             @Valid @RequestBody CourseDto courseDto,
             Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant teacher = participantService.findByMail(authentication.getName());
-        if (!teacher.isTeacher()) {
-            throw new NoParticipantRightsException("User with ID = " + teacher.getId()
-                    + " is not a teacher");
-        }
-        Course updatedCourse = courseService.updateCourseInfo(course, courseDto);
-        CourseResponseDto courseResponseDto = new CourseResponseDto();
-        courseResponseDto.setDescription(updatedCourse.getDescription());
-        courseResponseDto.setName(updatedCourse.getName());
+        CourseResponseDto courseResponseDto = courseService.updateCourse(courseId, courseDto, authentication,
+                participantService, userCourseAgentService);
         return ResponseEntity.ok(courseResponseDto);
     }
 
@@ -220,42 +183,9 @@ public class CourseController {
             @RequestParam("file") MultipartFile solution,
             Authentication authentication
     ) {
-        Course course = checkCourseAndUserData(courseId, authentication);
-        Participant student = participantService.findByMail(authentication.getName());
-        Task task = taskService.showTaskById(taskId);
-        if (task == null) {
-            throw new NoSuchObjectException("There is no task with ID = " + taskId
-                    + " in Database");
-        }
-        Answer answer = taskService.addAnswer(date, solution, task, student);
-        if (answer == null) {
-            return ResponseEntity.badRequest().body("Can not add answer");
-        }
-        return ResponseEntity.ok("Answer added");
+        ResponseDto response = courseService.addTask(courseId, taskId, date, solution, authentication,
+                participantService, taskService, userCourseAgentService);
+        return ResponseEntity.status(response.status()).body(response.message());
     }
 
-    public boolean checkUserRoleInCourse(Course course, Authentication authentication) {
-        Participant participant = participantService.findByMail(authentication.getName());
-        UserCourseAgent userCourseAgent = userCourseAgentService.findUserCourseAgent(course, participant);
-        return switch (userCourseAgent.getRole().getName()) {
-            case ROLE_ASSISTANT -> true;
-            case ROLE_TEACHER -> true;
-            default -> false;
-        };
-    }
-
-    public Course checkCourseAndUserData(int courseId, Authentication authentication) {
-        Course course = courseService.findById(courseId);
-        if (course == null) {
-            throw new NoSuchCourseException("There is no course with ID = " + courseId
-                    + " in Database");
-        }
-        Participant participant = participantService.findByMail(authentication.getName());
-        UserCourseAgent userCourseAgent = userCourseAgentService.findUserCourseAgent(course, participant);
-        if (userCourseAgent == null) {
-            throw new NoSuchObjectException("There isn't participant with id " + participant.getId()
-                    + " in course with id " + courseId);
-        }
-        return course;
-    }
 }
