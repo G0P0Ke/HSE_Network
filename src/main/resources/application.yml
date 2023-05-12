@@ -1,0 +1,45 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+spring:
+  cloud:
+    vault:
+      host: localhost
+      port: 8200
+      scheme: https
+      uri: https://localhost:8200
+      connection-timeout: 5000
+      read-timeout: 15000
+      authentication: approle
+      app-role:
+        role-id: ${SPRING_ROLE_ID}
+        secret-id: ${SPRING_SECRET_ID}
+  jpa:
+    generate-ddl: 'false'
+    show-sql: 'false'
+    hibernate:
+      ddl-auto: validate
+  mail:
+    host: smtp.yandex.ru
+    username: ${spring.cloud.vault.mail.username}
+    password: ${spring.cloud.vault.mail.password}
+    protocol: ${spring.cloud.vault.mail.protocol}
+    port: '465'
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  datasource:
+    password: ${spring.cloud.vault.database.password}
+    username: ${spring.cloud.vault.database.username}
+    url: jdbc:mysql://localhost:3306/my_db?allowPublicKeyRetrieval=true&useSSL=false&amp&serverTimezone=UTC
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  jackson:
+    serialization:
+      fail-on-empty-beans: 'false'
+mail:
+  debug: 'false'
